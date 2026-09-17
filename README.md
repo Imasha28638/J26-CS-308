@@ -1,2 +1,2 @@
 # J26-CS-308
-Cloud Forensic Log Analysis with Anti-Forensic Detection and Explainable Attack Reconstruction
+Machine Learning–Driven Multi-Layer Cloud Security Analytics for Insider Risk, Threat Detection, Forensic Evidence Triage, and Infrastructure Misconfiguration Assessment 
