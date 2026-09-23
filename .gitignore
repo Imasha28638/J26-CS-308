@@ -1,0 +1,71 @@
+#General gitignore for Python projects. Maybe there will be some additions in the future.
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Raw datasets
+data/raw/
+data/processed/
+
+# Large compressed datasets
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
+# ML model files
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+*.onnx
+
+# Cloud credentials
+credentials.json
+service-account.json
+*.pem
+*.key
+
+# Terraform sensitive/local files
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Temporary files
+*.tmp
+*.temp
