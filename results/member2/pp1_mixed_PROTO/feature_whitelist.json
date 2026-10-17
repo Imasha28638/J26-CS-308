@@ -1,0 +1,31 @@
+{
+  "numeric_features": [
+    "event_count",
+    "unique_api_count",
+    "unique_service_count",
+    "write_count",
+    "write_rate",
+    "error_count",
+    "error_rate",
+    "distinct_regions",
+    "mean_gap_s",
+    "max_gap_s",
+    "median_gap_s",
+    "credential_api_count",
+    "identity_mutation_count",
+    "logging_mutation_count",
+    "discovery_api_count",
+    "secret_access_count",
+    "api_calls_per_minute",
+    "svc_0",
+    "svc_1",
+    "svc_2",
+    "svc_3",
+    "svc_4",
+    "svc_5",
+    "svc_6",
+    "svc_7",
+    "svc_8",
+    "svc_9"
+  ]
+}

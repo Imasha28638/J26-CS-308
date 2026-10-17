@@ -1,0 +1,33 @@
+{
+  "Records": [
+    {
+      "eventTime": "2026-07-02T10:10:02Z", "eventName": "DescribeTrails",
+      "eventSource": "cloudtrail.amazonaws.com", "awsRegion": "us-east-1",
+      "readOnly": true, "eventID": "example-demo-1",
+      "userIdentity": {"type": "IAMUser", "arn": "arn:aws:iam::000000000000:user/demo-operator"},
+      "sourceIPAddress": "198.51.100.24", "requestParameters": {}
+    },
+    {
+      "eventTime": "2026-07-02T10:10:16Z", "eventName": "GetTrailStatus",
+      "eventSource": "cloudtrail.amazonaws.com", "awsRegion": "us-east-1",
+      "readOnly": true, "eventID": "example-demo-2",
+      "userIdentity": {"type": "IAMUser", "arn": "arn:aws:iam::000000000000:user/demo-operator"},
+      "sourceIPAddress": "198.51.100.24", "requestParameters": {}
+    },
+    {
+      "eventTime": "2026-07-02T10:10:31Z", "eventName": "PutEventSelectors",
+      "eventSource": "cloudtrail.amazonaws.com", "awsRegion": "us-east-1",
+      "readOnly": false, "eventID": "example-demo-3",
+      "userIdentity": {"type": "IAMUser", "arn": "arn:aws:iam::000000000000:user/demo-operator"},
+      "sourceIPAddress": "198.51.100.24",
+      "requestParameters": {"eventSelectors": [{"readWriteType": "ReadOnly", "includeManagementEvents": false}]}
+    },
+    {
+      "eventTime": "2026-07-02T10:10:44Z", "eventName": "StopLogging",
+      "eventSource": "cloudtrail.amazonaws.com", "awsRegion": "us-east-1",
+      "readOnly": false, "eventID": "example-demo-4",
+      "userIdentity": {"type": "IAMUser", "arn": "arn:aws:iam::000000000000:user/demo-operator"},
+      "sourceIPAddress": "198.51.100.24", "requestParameters": {"name":"example-trail"}
+    }
+  ]
+}

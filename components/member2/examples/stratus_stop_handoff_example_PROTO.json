@@ -1,0 +1,22 @@
+{
+  "schema_version": "member2_to_member4_proto_v1",
+  "status": "PROTO_EVALUATION",
+  "source": "member2_pp1_binary_stacking",
+  "score_type": "uncalibrated_model_score",
+  "findings": [
+    {
+      "finding_id": "d4587224fb6a08382ee01412",
+      "event_window_start_utc": "2024-07-31T13:05:00Z",
+      "actor_hash": "f8488abb70e22d6da5e1",
+      "activity": "MALICIOUS_PATTERN",
+      "predicted_binary": 1,
+      "stacking_score": 0.90721,
+      "model_disagreement": 0.064462,
+      "api_operations": {"StopLogging": 1},
+      "aws_services": ["cloudtrail.amazonaws.com"],
+      "event_count": 1,
+      "evidence_record_numbers": [1],
+      "attack_category": null
+    }
+  ]
+}

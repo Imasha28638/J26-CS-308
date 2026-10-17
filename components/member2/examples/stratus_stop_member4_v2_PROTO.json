@@ -1,0 +1,44 @@
+{
+  "schema_version": "member2_to_member4_proto_v2",
+  "status": "PROTO_EVALUATION",
+  "source": "member2_pp1_binary_stacking",
+  "score_type": "uncalibrated_model_score",
+  "model_output_task": "binary_benign_vs_malicious",
+  "evidence_source": "Data/Raw/data/raw/stratus/docs/detonation-logs/aws.defense-evasion.cloudtrail-stop.json",
+  "evidence_source_sha256": "f0abac472d1e75cf3e802001d3d92eae54844f3ba1cbccd8253dace1f3a29395",
+  "findings": [
+    {
+      "finding_id": "d4587224fb6a08382ee01412",
+      "timestamp": "2024-07-31T13:05:00Z",
+      "timestamp_type": "window_start_utc",
+      "entity_id": "actor_hash:f8488abb70e22d6da5e1",
+      "entity_id_type": "pseudonymous_actor_group",
+      "resource_id": null,
+      "resource_ids": [],
+      "service": "CloudTrail",
+      "event_source": "cloudtrail.amazonaws.com",
+      "event_name": "StopLogging",
+      "event_name_type": "sole_operation",
+      "prediction": "Malicious",
+      "predicted_binary": 1,
+      "confidence": 0.90721,
+      "confidence_type": "uncalibrated_model_score",
+      "evidence_reference": "Data/Raw/data/raw/stratus/docs/detonation-logs/aws.defense-evasion.cloudtrail-stop.json#record=1",
+      "evidence_record_numbers": [
+        1
+      ],
+      "evidence_event_ids": [
+        "10163ed2-2253-469d-a5ee-cbc6651f8934"
+      ],
+      "api_operations": {
+        "StopLogging": 1
+      },
+      "aws_services": [
+        "cloudtrail.amazonaws.com"
+      ],
+      "event_count": 1,
+      "model_disagreement": 0.064462,
+      "attack_category": null
+    }
+  ]
+}

@@ -1,0 +1,207 @@
+scenarios:
+  # ---------------- Credential Abuse ----------------
+  - scenario_id: "T1078.004_aws_login_sfa"
+    enabled: true
+    attack_class: "Credential Abuse"
+    attack_technique: "T1078.004"
+    relative_path: "datasets/attack_techniques/T1078.004/aws_login_sfa"
+    input_file: "cloudtrail.json"
+    label_scope: "scenario"
+    label_confidence: "medium"
+    ground_truth_source: "Splunk Attack Data scenario description and repository path"
+    rule:
+      type: "event_match"
+      event_sources: ["signin.amazonaws.com"]
+      event_names: ["ConsoleLogin"]
+    review_note: "YAML inventory contains no MITRE technique field. Technique retained from repository path. Only one unique event remains after exact deduplication."
+
+  - scenario_id: "T1586.003_aws_console_login_multiple_ips"
+    enabled: true
+    attack_class: "Credential Abuse"
+    attack_technique: "T1586.003"
+    relative_path: "datasets/attack_techniques/T1586.003/aws_console_login_multiple_ips"
+    input_file: "cloudtrail.json"
+    label_scope: "scenario"
+    label_confidence: "medium"
+    ground_truth_source: "Splunk Attack Data synthetic scenario description and repository path"
+    rule:
+      type: "event_match"
+      event_sources: ["signin.amazonaws.com"]
+      event_names: ["ConsoleLogin"]
+    review_note: "Multiple-IP behavior is a scenario/window property, not an individual-event property. Local duplicate and eventID-conflict checks remain mandatory."
+
+  - scenario_id: "T1185_aws_concurrent_sessions_from_different_ips"
+    enabled: false
+    attack_class: "Credential Abuse"
+    attack_technique: "T1185"
+    relative_path: "datasets/attack_techniques/T1185/aws_concurrent_sessions_from_different_ips"
+    input_file: "cloudtrail.json"
+    review_note: "Excluded from event-level training: the observed records are health.amazonaws.com DescribeEventAggregates events and do not directly encode the described phishing/session theft behavior."
+
+  # ---------------- Discovery ----------------
+  - scenario_id: "T1526_aws_security_scanner"
+    enabled: true
+    attack_class: "Discovery"
+    attack_technique: "T1526"
+    relative_path: "datasets/attack_techniques/T1526/aws_security_scanner"
+    input_file: "aws_security_scanner.json"
+    label_scope: "scenario"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML description: CloudSploit-generated CloudTrail logs"
+    rule:
+      type: "all_events"
+    review_note: "Use global cross-scenario deduplication because this discovery corpus may overlap with other discovery scenario files."
+
+  - scenario_id: "T1580_aws_iam_accessdenied_discovery_events"
+    enabled: true
+    attack_class: "Discovery"
+    attack_technique: "T1580"
+    relative_path: "datasets/attack_techniques/T1580/aws_iam_accessdenied_discovery_events"
+    input_file: "aws_iam_accessdenied_discovery_events.json"
+    label_scope: "scenario"
+    label_confidence: "medium"
+    ground_truth_source: "Splunk Attack Data automatically categorized scenario metadata"
+    rule:
+      type: "all_events"
+    review_note: "All inventoried events have AccessDenied. Treat as scenario-level discovery ground truth, not benign failures."
+
+  - scenario_id: "T1580_aws_iam_excessive_list_command_usage"
+    enabled: true
+    attack_class: "Discovery"
+    attack_technique: "T1580"
+    relative_path: "datasets/attack_techniques/T1580/aws_iam_excessive_list_command_usage"
+    input_file: "aws_iam_excessive_list_command_usage.json"
+    label_scope: "scenario"
+    label_confidence: "medium"
+    ground_truth_source: "Splunk Attack Data automatically categorized scenario metadata"
+    rule:
+      type: "all_events"
+    review_note: "Large class. Do not directly train multiclass models on raw counts without balancing and scenario-aware splitting."
+
+  # ---------------- Privilege Escalation ----------------
+  - scenario_id: "T1078_aws_create_policy_version"
+    enabled: true
+    attack_class: "Privilege Escalation"
+    attack_technique: "T1078"
+    relative_path: "datasets/attack_techniques/T1078/aws_create_policy_version"
+    input_file: "aws_cloudtrail_events.json"
+    label_scope: "event_rule"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML scenario description"
+    rule:
+      type: "event_match"
+      event_sources: ["iam.amazonaws.com"]
+      event_names: ["CreatePolicyVersion"]
+    review_note: "One eventID conflict exists. Conflicting variants are automatically excluded."
+
+  - scenario_id: "T1078_aws_setdefaultpolicyversion"
+    enabled: true
+    attack_class: "Privilege Escalation"
+    attack_technique: "T1078"
+    relative_path: "datasets/attack_techniques/T1078/aws_setdefaultpolicyversion"
+    input_file: "aws_cloudtrail_events.json"
+    label_scope: "event_rule"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML scenario description"
+    rule:
+      type: "event_match"
+      event_sources: ["iam.amazonaws.com"]
+      event_names: ["SetDefaultPolicyVersion"]
+
+  - scenario_id: "T1078_aws_createaccesskey"
+    enabled: true
+    attack_class: "Privilege Escalation"
+    attack_technique: "T1078"
+    relative_path: "datasets/attack_techniques/T1078/aws_createaccesskey"
+    input_file: "aws_cloudtrail_events.json"
+    label_scope: "event_rule"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML scenario description"
+    rule:
+      type: "cross_user_api_call"
+      event_source: "iam.amazonaws.com"
+      event_name: "CreateAccessKey"
+    review_note: "Validated previously. KMS CreateKey rows, duplicates, and conflicting eventIDs are excluded."
+
+  # ---------------- Persistence ----------------
+  - scenario_id: "T1078_aws_createloginprofile"
+    enabled: false
+    attack_class: "Persistence"
+    attack_technique: "T1078"
+    relative_path: "datasets/attack_techniques/T1078/aws_createloginprofile"
+    input_file: "aws_cloudtrail_events.json"
+    review_note: "Not used as Persistence yet. The supplied Splunk description says the correlated CreateLoginProfile + ConsoleLogin behavior can indicate privilege escalation, so mapping it to the research Persistence class requires separate justification."
+
+  - scenario_id: "T1556.006_aws_new_mfa_method_registered_for_user"
+    enabled: true
+    attack_class: "Persistence"
+    attack_technique: "T1556.006"
+    relative_path: "datasets/attack_techniques/T1556.006/aws_new_mfa_method_registered_for_user"
+    input_file: "cloudtrail.json"
+    label_scope: "event_rule"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML scenario description"
+    rule:
+      type: "event_match"
+      event_sources: ["iam.amazonaws.com"]
+      event_names: ["CreateVirtualMFADevice"]
+    review_note: "Only two records. More persistence data will be required before reliable multiclass training."
+
+  # ---------------- Defense Evasion ----------------
+  - scenario_id: "T1562.008_stop_delete_cloudtrail"
+    enabled: true
+    attack_class: "Defense Evasion"
+    attack_technique: "T1562.008"
+    relative_path: "datasets/attack_techniques/T1562.008/stop_delete_cloudtrail"
+    input_file: "aws_cloudtrail_events.json"
+    label_scope: "event_rule"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML attack-simulation description"
+    rule:
+      type: "event_match"
+      event_sources: ["cloudtrail.amazonaws.com"]
+      event_names: ["StopLogging","DeleteTrail"]
+
+  - scenario_id: "T1562.008_update_cloudtrail"
+    enabled: true
+    attack_class: "Defense Evasion"
+    attack_technique: "T1562.008"
+    relative_path: "datasets/attack_techniques/T1562.008/update_cloudtrail"
+    input_file: "aws_cloudtrail_events.json"
+    label_scope: "event_rule"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML scenario description"
+    rule:
+      type: "event_match"
+      event_sources: ["cloudtrail.amazonaws.com"]
+      event_names: ["UpdateTrail"]
+    review_note: "Conservative rule. Setup/teardown events such as CreateTrail, StartLogging, CreateBucket, PutBucketPolicy and DeleteBucket are not automatically labeled."
+
+  - scenario_id: "T1562.008_delete_cloudwatch_log_group"
+    enabled: true
+    attack_class: "Defense Evasion"
+    attack_technique: "T1562.008"
+    relative_path: "datasets/attack_techniques/T1562.008/delete_cloudwatch_log_group"
+    input_file: "aws_cloudtrail_events.json"
+    label_scope: "event_rule"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML scenario description"
+    rule:
+      type: "event_match"
+      event_sources: ["logs.amazonaws.com"]
+      event_names: ["DeleteLogGroup"]
+    review_note: "Conservative rule. The scenario-specific DeleteLogGroup event is labeled. Other CloudTrail stop/delete events remain excluded here."
+
+  - scenario_id: "T1562.008_aws_delete_security_services"
+    enabled: true
+    attack_class: "Defense Evasion"
+    attack_technique: "T1562.008"
+    relative_path: "datasets/attack_techniques/T1562.008/aws_delete_security_services"
+    input_file: "aws_cloudtrail_events.json"
+    label_scope: "event_rule"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML scenario description"
+    rule:
+      type: "event_match"
+      event_names: ["DeleteDetector","DeleteRule","DeleteWebACL","DeleteIPSet","DeleteLogStream"]
+    review_note: "Failed deletion attempts remain malicious activity with attack_success=0."

@@ -1,0 +1,153 @@
+{
+  "experiment": "PP1 mixed-source baseline",
+  "training_attacks": "Splunk scenario-associated candidates",
+  "training_normal": "generated normal operations by design",
+  "training_additional_attack": "generated controlled injected attack sequences",
+  "test_split": "disjoint scenario/session group 80/20; source class confounding remains a research limitation",
+  "model_count": 4,
+  "meta_model": "Logistic Regression, group-separated out-of-fold predictions",
+  "train_windows": 797,
+  "test_windows": 173,
+  "test_attack_windows": 30,
+  "test_normal_windows": 143,
+  "model_metrics": {
+    "Random Forest": {
+      "accuracy": 0.9364161849710982,
+      "precision": 0.9523809523809523,
+      "recall": 0.6666666666666666,
+      "f1": 0.7843137254901961,
+      "roc_auc": 0.931002331002331,
+      "average_precision": 0.8309855409325223,
+      "confusion_matrix_0_1": [
+        [
+          142,
+          1
+        ],
+        [
+          10,
+          20
+        ]
+      ]
+    },
+    "LightGBM": {
+      "accuracy": 0.9248554913294798,
+      "precision": 0.8695652173913043,
+      "recall": 0.6666666666666666,
+      "f1": 0.7547169811320755,
+      "roc_auc": 0.9488344988344989,
+      "average_precision": 0.8722659320329229,
+      "confusion_matrix_0_1": [
+        [
+          140,
+          3
+        ],
+        [
+          10,
+          20
+        ]
+      ]
+    },
+    "XGBoost": {
+      "accuracy": 0.9364161849710982,
+      "precision": 0.9523809523809523,
+      "recall": 0.6666666666666666,
+      "f1": 0.7843137254901961,
+      "roc_auc": 0.948018648018648,
+      "average_precision": 0.8741670861814141,
+      "confusion_matrix_0_1": [
+        [
+          142,
+          1
+        ],
+        [
+          10,
+          20
+        ]
+      ]
+    },
+    "LSTM": {
+      "accuracy": 0.7803468208092486,
+      "precision": 0.42,
+      "recall": 0.7,
+      "f1": 0.525,
+      "roc_auc": 0.8634032634032635,
+      "average_precision": 0.6729909240907461,
+      "confusion_matrix_0_1": [
+        [
+          114,
+          29
+        ],
+        [
+          9,
+          21
+        ]
+      ]
+    },
+    "Stacking ensemble": {
+      "accuracy": 0.930635838150289,
+      "precision": 0.8461538461538461,
+      "recall": 0.7333333333333333,
+      "f1": 0.7857142857142857,
+      "roc_auc": 0.9440559440559441,
+      "average_precision": 0.8638905142313519,
+      "confusion_matrix_0_1": [
+        [
+          139,
+          4
+        ],
+        [
+          8,
+          22
+        ]
+      ]
+    },
+    "Hard voting": {
+      "accuracy": 0.9421965317919075,
+      "precision": 0.9545454545454546,
+      "recall": 0.7,
+      "f1": 0.8076923076923077,
+      "roc_auc": 0.8970862470862471,
+      "average_precision": 0.7581978093991327,
+      "confusion_matrix_0_1": [
+        [
+          142,
+          1
+        ],
+        [
+          9,
+          21
+        ]
+      ]
+    },
+    "Soft voting": {
+      "accuracy": 0.9421965317919075,
+      "precision": 0.9545454545454546,
+      "recall": 0.7,
+      "f1": 0.8076923076923077,
+      "roc_auc": 0.942890442890443,
+      "average_precision": 0.8656686863514037,
+      "confusion_matrix_0_1": [
+        [
+          142,
+          1
+        ],
+        [
+          9,
+          21
+        ]
+      ]
+    }
+  },
+  "external_stratus_approved_positive_windows": 9,
+  "external_stratus_detected_positive_windows": 9,
+  "external_stratus_positive_recall": 1.0,
+  "interpretation": "Exploratory mixed-source development comparison only",
+  "limitations": [
+    "Collection source may remain correlated with class; reported classification performance may reflect source differences.",
+    "Splunk attack associations are scenario proxies, not validated per-event ground truth.",
+    "Normal examples and controlled injected attacks are generated and may not represent real account behaviors.",
+    "Stratus external check evaluates recall of attack-containing windows only; no specificity or precision can be estimated.",
+    "External Stratus attack contexts are often single-event; LSTM temporal performance cannot be inferred.",
+    "This is binary classification only; attack class labels are for analysis, not predicted classes."
+  ]
+}

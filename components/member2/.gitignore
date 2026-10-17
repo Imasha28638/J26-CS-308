@@ -1,0 +1,23 @@
+# Local execution artifacts; do not stage original third-party collections.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+outputs/
+logs/
+cache/
+*.bak
+*.tmp
+# Large model assets should be handled via Git LFS / reviewed releases.
+# Approved PP1 model checkpoints
+!/models/pp1_mixed_PROTO/tree_models_and_meta_PROTO.joblib
+!/models/pp1_mixed_PROTO/lstm_PROTO.pt
+!/models/pp1_public_cloudtrail_PROTO/tree_models_and_meta_PROTO.joblib
+!/models/pp1_public_cloudtrail_PROTO/lstm_PROTO.pt
+
+# Local staging history
+/staging_manifest_PROTO.json

@@ -1,0 +1,25 @@
+scenarios:
+
+  T1562.008_stop_delete_cloudtrail:
+    attack_class: "Defense Evasion"
+    attack_technique: "T1562.008"
+    label_scope: "event_rule"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML metadata"
+    rule:
+      type: "event_name_in"
+      event_source: "cloudtrail.amazonaws.com"
+      event_names:
+        - "StopLogging"
+        - "DeleteTrail"
+
+  T1078_aws_createaccesskey:
+    attack_class: "Privilege Escalation"
+    attack_technique: "T1078"
+    label_scope: "event_rule"
+    label_confidence: "high"
+    ground_truth_source: "Splunk Attack Data YAML metadata"
+    rule:
+      type: "cross_user_api_call"
+      event_source: "iam.amazonaws.com"
+      event_name: "CreateAccessKey"

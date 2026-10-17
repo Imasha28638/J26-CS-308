@@ -1,0 +1,109 @@
+{
+  "report": "Per-model binary window detection by publisher-labeled attack scenario",
+  "decision_threshold": 0.5,
+  "baseline_predictions_sha256": "092f70ee83ef4e5379f9cec9762b576c88c2c7d31450bcc1eb27d165d7750689",
+  "weighted_predictions_sha256": "98647fa15631d2e9135970250730cc42a93b7b9a4eb2b3a1498162f38447df9a",
+  "test_windows": 1120,
+  "unique_attack_containing_windows": 26,
+  "scenario_window_occurrences": 29,
+  "number_of_scenarios": 10,
+  "models_reported": [
+    "Random Forest",
+    "LightGBM",
+    "XGBoost",
+    "LSTM",
+    "Stacking ensemble",
+    "Hard voting (3-of-4)",
+    "Soft voting",
+    "Weighted stacking candidate"
+  ],
+  "model_metrics": [
+    {
+      "model": "Random Forest",
+      "tp": 12,
+      "fp": 3,
+      "fn": 14,
+      "tn": 1091,
+      "precision": 0.8,
+      "recall": 0.46153846153846156,
+      "f1": 0.5853658536585366
+    },
+    {
+      "model": "LightGBM",
+      "tp": 23,
+      "fp": 8,
+      "fn": 3,
+      "tn": 1086,
+      "precision": 0.7419354838709677,
+      "recall": 0.8846153846153846,
+      "f1": 0.8070175438596491
+    },
+    {
+      "model": "XGBoost",
+      "tp": 10,
+      "fp": 2,
+      "fn": 16,
+      "tn": 1092,
+      "precision": 0.8333333333333334,
+      "recall": 0.38461538461538464,
+      "f1": 0.5263157894736842
+    },
+    {
+      "model": "LSTM",
+      "tp": 7,
+      "fp": 41,
+      "fn": 19,
+      "tn": 1053,
+      "precision": 0.14583333333333334,
+      "recall": 0.2692307692307692,
+      "f1": 0.1891891891891892
+    },
+    {
+      "model": "Stacking ensemble",
+      "tp": 0,
+      "fp": 0,
+      "fn": 26,
+      "tn": 1094,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "model": "Hard voting (3-of-4)",
+      "tp": 12,
+      "fp": 2,
+      "fn": 14,
+      "tn": 1092,
+      "precision": 0.8571428571428571,
+      "recall": 0.46153846153846156,
+      "f1": 0.6
+    },
+    {
+      "model": "Soft voting",
+      "tp": 14,
+      "fp": 4,
+      "fn": 12,
+      "tn": 1090,
+      "precision": 0.7777777777777778,
+      "recall": 0.5384615384615384,
+      "f1": 0.6363636363636364
+    },
+    {
+      "model": "Weighted stacking candidate",
+      "tp": 24,
+      "fp": 93,
+      "fn": 2,
+      "tn": 1001,
+      "precision": 0.20512820512820512,
+      "recall": 0.9230769230769231,
+      "f1": 0.3356643356643357
+    }
+  ],
+  "methodology_notes": [
+    "The original public_attack_scenario_recall_PROTO.csv covers the original stacking ensemble only.",
+    "All displayed detection rates apply to binary actor/time-window predictions, not attack-category predictions.",
+    "A single window can contain events from multiple publisher scenarios, so scenario window totals can exceed distinct positive windows.",
+    "The same fixed decision threshold 0.5 is used for model comparisons; no threshold tuning or model fitting occurs.",
+    "All results use the already-evaluated publisher TestOn split; results are descriptive, not new independent validation."
+  ]
+}
