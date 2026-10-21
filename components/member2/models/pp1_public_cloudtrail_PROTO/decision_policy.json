@@ -1,0 +1,38 @@
+{
+  "schema_version": "member2_decision_policy_v1",
+  "model_variant": "pp1_public_cloudtrail_PROTO",
+  "policy_name": "original_public_baseline_default_threshold",
+  "decision_threshold": 0.5,
+  "threshold_selection_protocol": "Standard default classification threshold 0.5; unweighted meta-learner",
+  "test_set_used_for_tuning": false,
+  "scoring_objective": "original_baseline_benchmark",
+  "calibration_status": "uncalibrated_model_scores",
+  "calibration_warning": "Model confidence outputs are uncalibrated regression scores and should not be interpreted as Bayesian posterior probabilities of compromise.",
+  "validation_protocol": "3-fold StratifiedGroupKFold on TrainOn out-of-fold base learner probabilities (actor-day grouping)",
+  "train_samples": {
+    "total_windows": 4313,
+    "positive_windows": 13
+  },
+  "test_samples": {
+    "total_windows": 1120,
+    "positive_windows": 26
+  },
+  "meta_learner": {
+    "type": "LogisticRegression",
+    "class_weight": null,
+    "C": 1.0,
+    "random_state": 4010,
+    "probability_input_order": [
+      "Random Forest",
+      "LightGBM",
+      "XGBoost",
+      "LSTM"
+    ]
+  },
+  "artifact_sha256": {
+    "tree_models_and_meta": "c56aea271e9cc28d68eb7a47977213e2df35ecd7582508f35770de65bdd5bea9",
+    "lstm": "00789d2b8e0cff0d129c6c482a4b9d5ea600a4dc7adcd80e59547cbcb09c57ab",
+    "feature_whitelist": "b856bfedb5f8f3b876415cba954955d4bd5a89c9677b68870b3fc1da64d73beb"
+  }
+}
+

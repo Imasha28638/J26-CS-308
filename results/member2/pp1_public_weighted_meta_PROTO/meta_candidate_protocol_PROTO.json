@@ -1,0 +1,18 @@
+{
+  "protocol": "Weighted stacking candidate; fixed parameters and fixed threshold",
+  "class_weight": "balanced",
+  "C": 0.7,
+  "threshold": 0.5,
+  "seed": 4010,
+  "fit_rows": 4313,
+  "fit_positives": 13,
+  "train_positive_groups": 6,
+  "input_sha256": {
+    "oof": "1faa0ee2ca7f81bcd4d9265a8da48368ba1caaabf3d929717fcd2323adc806db",
+    "test": "092f70ee83ef4e5379f9cec9762b576c88c2c7d31450bcc1eb27d165d7750689",
+    "model": "c56aea271e9cc28d68eb7a47977213e2df35ecd7582508f35770de65bdd5bea9",
+    "audit": "bc5da0edd198f68f1cfe20d8fac86174282493731deaa8c9cc080fbfadac4290",
+    "report": "acaa0cbf131bcbc8ddda78ded452e880f260064b3de15be8052813350231236b"
+  },
+  "no_publisher_test_based_model_selection": true
+}

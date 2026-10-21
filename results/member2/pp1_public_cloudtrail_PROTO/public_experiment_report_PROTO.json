@@ -1,0 +1,274 @@
+{
+  "experiment": "PP1 Ariel public AWS CloudTrail publisher-split supervised window detection",
+  "source_url": "https://github.com/ArielCyber/cloud_log_sampling",
+  "window_minutes": 5,
+  "seed": 4010,
+  "training_events": 20702,
+  "test_events": 24079,
+  "train_windows": 4313,
+  "test_windows": 1120,
+  "positive_train_windows": 13,
+  "positive_test_windows": 26,
+  "publisher_train_test_event_overlap": 0,
+  "actor_overlap_between_splits": 10,
+  "original_actor_window_overlap": 2,
+  "removed_train_windows": 2,
+  "out_of_fold_grouping": "actor-day",
+  "fold_split_seed": 4010,
+  "model_count": 4,
+  "meta_model": "LogisticRegression trained on group-separated OOF predictions",
+  "model_metrics": {
+    "Random Forest": {
+      "accuracy": 0.9848214285714286,
+      "precision": 0.8,
+      "recall": 0.46153846153846156,
+      "f1": 0.5853658536585366,
+      "roc_auc": 0.948548024187878,
+      "average_precision": 0.7214147116170381,
+      "confusion_matrix_0_1": [
+        [
+          1091,
+          3
+        ],
+        [
+          14,
+          12
+        ]
+      ]
+    },
+    "LightGBM": {
+      "accuracy": 0.9901785714285715,
+      "precision": 0.7419354838709677,
+      "recall": 0.8846153846153846,
+      "f1": 0.8070175438596491,
+      "roc_auc": 0.9269265926030095,
+      "average_precision": 0.7106554917382677,
+      "confusion_matrix_0_1": [
+        [
+          1086,
+          8
+        ],
+        [
+          3,
+          23
+        ]
+      ]
+    },
+    "XGBoost": {
+      "accuracy": 0.9839285714285714,
+      "precision": 0.8333333333333334,
+      "recall": 0.38461538461538464,
+      "f1": 0.5263157894736842,
+      "roc_auc": 0.8987308395443678,
+      "average_precision": 0.6767260447084577,
+      "confusion_matrix_0_1": [
+        [
+          1092,
+          2
+        ],
+        [
+          16,
+          10
+        ]
+      ]
+    },
+    "LSTM": {
+      "accuracy": 0.9464285714285714,
+      "precision": 0.14583333333333334,
+      "recall": 0.2692307692307692,
+      "f1": 0.1891891891891892,
+      "roc_auc": 0.9399521867529179,
+      "average_precision": 0.3037815729756643,
+      "confusion_matrix_0_1": [
+        [
+          1053,
+          41
+        ],
+        [
+          19,
+          7
+        ]
+      ]
+    },
+    "Stacking ensemble": {
+      "accuracy": 0.9767857142857143,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "roc_auc": 0.9717339333427085,
+      "average_precision": 0.5396499601466177,
+      "confusion_matrix_0_1": [
+        [
+          1094,
+          0
+        ],
+        [
+          26,
+          0
+        ]
+      ]
+    },
+    "Hard voting (3-of-4)": {
+      "accuracy": 0.9857142857142858,
+      "precision": 0.8571428571428571,
+      "recall": 0.46153846153846156,
+      "f1": 0.6,
+      "roc_auc": 0.7298551539867811,
+      "average_precision": 0.4081043956043956,
+      "confusion_matrix_0_1": [
+        [
+          1092,
+          2
+        ],
+        [
+          14,
+          12
+        ]
+      ]
+    },
+    "Soft voting": {
+      "accuracy": 0.9857142857142858,
+      "precision": 0.7777777777777778,
+      "recall": 0.5384615384615384,
+      "f1": 0.6363636363636364,
+      "roc_auc": 0.9836520883138798,
+      "average_precision": 0.7361434957333185,
+      "confusion_matrix_0_1": [
+        [
+          1090,
+          4
+        ],
+        [
+          12,
+          14
+        ]
+      ]
+    }
+  },
+  "scenarios_seen_in_training": [
+    "AnonymousS3Calls",
+    "MassGetMultipleBuckets",
+    "MassGetSingleBucket"
+  ],
+  "test_only_scenarios": [
+    "AnonymousS3PentestWeirdAPIs",
+    "FullPersistenceCreationChain",
+    "MassDeleteMultipleBuckets",
+    "MassDeleteSingleBucket",
+    "MassPutMultipleBuckets",
+    "MassPutSingleBucket",
+    "RootFederationTokenGeneration"
+  ],
+  "scenario_wise_detection": [
+    {
+      "scenario": "AnonymousS3Calls",
+      "seen_in_training": true,
+      "positive_test_windows": 2,
+      "detected_positive_windows": 0,
+      "window_recall": 0.0,
+      "publisher_positive_events_in_scenario": 17,
+      "events_in_detected_windows": 0,
+      "event_coverage_by_window": 0.0
+    },
+    {
+      "scenario": "AnonymousS3PentestWeirdAPIs",
+      "seen_in_training": false,
+      "positive_test_windows": 2,
+      "detected_positive_windows": 0,
+      "window_recall": 0.0,
+      "publisher_positive_events_in_scenario": 25,
+      "events_in_detected_windows": 0,
+      "event_coverage_by_window": 0.0
+    },
+    {
+      "scenario": "FullPersistenceCreationChain",
+      "seen_in_training": false,
+      "positive_test_windows": 1,
+      "detected_positive_windows": 0,
+      "window_recall": 0.0,
+      "publisher_positive_events_in_scenario": 10,
+      "events_in_detected_windows": 0,
+      "event_coverage_by_window": 0.0
+    },
+    {
+      "scenario": "MassDeleteMultipleBuckets",
+      "seen_in_training": false,
+      "positive_test_windows": 2,
+      "detected_positive_windows": 0,
+      "window_recall": 0.0,
+      "publisher_positive_events_in_scenario": 510,
+      "events_in_detected_windows": 0,
+      "event_coverage_by_window": 0.0
+    },
+    {
+      "scenario": "MassDeleteSingleBucket",
+      "seen_in_training": false,
+      "positive_test_windows": 2,
+      "detected_positive_windows": 0,
+      "window_recall": 0.0,
+      "publisher_positive_events_in_scenario": 302,
+      "events_in_detected_windows": 0,
+      "event_coverage_by_window": 0.0
+    },
+    {
+      "scenario": "MassGetMultipleBuckets",
+      "seen_in_training": true,
+      "positive_test_windows": 6,
+      "detected_positive_windows": 0,
+      "window_recall": 0.0,
+      "publisher_positive_events_in_scenario": 535,
+      "events_in_detected_windows": 0,
+      "event_coverage_by_window": 0.0
+    },
+    {
+      "scenario": "MassGetSingleBucket",
+      "seen_in_training": true,
+      "positive_test_windows": 2,
+      "detected_positive_windows": 0,
+      "window_recall": 0.0,
+      "publisher_positive_events_in_scenario": 123,
+      "events_in_detected_windows": 0,
+      "event_coverage_by_window": 0.0
+    },
+    {
+      "scenario": "MassPutMultipleBuckets",
+      "seen_in_training": false,
+      "positive_test_windows": 7,
+      "detected_positive_windows": 0,
+      "window_recall": 0.0,
+      "publisher_positive_events_in_scenario": 542,
+      "events_in_detected_windows": 0,
+      "event_coverage_by_window": 0.0
+    },
+    {
+      "scenario": "MassPutSingleBucket",
+      "seen_in_training": false,
+      "positive_test_windows": 4,
+      "detected_positive_windows": 0,
+      "window_recall": 0.0,
+      "publisher_positive_events_in_scenario": 520,
+      "events_in_detected_windows": 0,
+      "event_coverage_by_window": 0.0
+    },
+    {
+      "scenario": "RootFederationTokenGeneration",
+      "seen_in_training": false,
+      "positive_test_windows": 1,
+      "detected_positive_windows": 0,
+      "window_recall": 0.0,
+      "publisher_positive_events_in_scenario": 1,
+      "events_in_detected_windows": 0,
+      "event_coverage_by_window": 0.0
+    }
+  ],
+  "metric_scope": "Actor/time-window binary task; not event-level attack classifier performance",
+  "limitations": [
+    "Labels are supplied by the dataset publisher; the repository describes should_sample=true as attack events.",
+    "Positive window target means at least one positive event; window metrics are not record-level metrics.",
+    "Seven attack scenarios present only in the test split; per-scenario recall is essential.",
+    "Publisher train/test event IDs do not overlap; some actor identities may overlap between splits.",
+    "Actor-day OOF separation (when selected) does not imply actor-disjoint folds.",
+    "The trained model has not been calibrated for a deployment alert threshold.",
+    "Models predict binary windows, not the attack class name."
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "study": "Diagnostic of saved PP1 public CloudTrail stacking checkpoint (read-only)",
+  "test_windows": 1120,
+  "test_positive_windows": 26,
+  "training_oof_windows": 4313,
+  "training_oof_positive_windows": 13,
+  "positive_oof_group_count": 6,
+  "positive_windows_per_group": {
+    "ariel_actor__08e3d488220ace7a5fe34274__2026-04-28": 5,
+    "ariel_actor__8b816b589e52b443047b3d07__2026-04-28": 3,
+    "ariel_actor__8d5e234e7a609eca845650ba__2026-04-28": 2,
+    "ariel_actor__235f4cefd31b5405dcf73d1c__2026-04-28": 1,
+    "ariel_actor__62eff50f18cd167185f6db29__2026-04-28": 1,
+    "ariel_actor__aba9b5ed46b94194148e6629__2026-04-28": 1
+  },
+  "meta": {
+    "type": "LogisticRegression",
+    "intercept": -5.92270386050726,
+    "coefficients_by_base_model": {
+      "Random Forest": 0.9334878620909821,
+      "LightGBM": 0.3914800661385904,
+      "XGBoost": 0.2330856536107776,
+      "LSTM": 2.1316164570329406
+    },
+    "class_weight": "None",
+    "train_oof_meta_score_summary_in_sample_descriptive_only": {
+      "min": 0.00267332,
+      "median": 0.00268285,
+      "p90": 0.00281917,
+      "p99": 0.00985384,
+      "max": 0.01381048,
+      "mean": 0.00298525
+    },
+    "train_oof_meta_positive_scores_in_sample_descriptive_only": {
+      "min": 0.00288811,
+      "median": 0.00761261,
+      "p90": 0.00934838,
+      "p99": 0.00995925,
+      "max": 0.01003881,
+      "mean": 0.00647754
+    },
+    "train_oof_meta_predicted_positive_at_0_5_in_sample_descriptive_only": 0,
+    "max_saved_probability_disagreement": 9.93129189996722e-17
+  },
+  "test_metrics_fixed_threshold_0_5": {
+    "Random Forest": {
+      "precision": 0.8,
+      "recall": 0.461538,
+      "f1": 0.585366,
+      "tp": 12,
+      "fp": 3,
+      "fn": 14,
+      "tn": 1091,
+      "predicted_positive": 15,
+      "average_precision": 0.721415,
+      "roc_auc": 0.948548,
+      "overall_score_summary": {
+        "min": 0.0,
+        "median": 0.0,
+        "p90": 0.01524748,
+        "p99": 0.67102556,
+        "max": 0.91421911,
+        "mean": 0.01981812
+      },
+      "positive_window_scores": {
+        "min": 0.0,
+        "median": 0.42975224,
+        "p90": 0.82971698,
+        "p99": 0.91419764,
+        "max": 0.91421911,
+        "mean": 0.51277929
+      },
+      "negative_window_scores": {
+        "min": 0.0,
+        "median": 0.0,
+        "p90": 0.00768159,
+        "p99": 0.20772606,
+        "max": 0.83754713,
+        "mean": 0.00810241
+      }
+    },
+    "LightGBM": {
+      "precision": 0.741935,
+      "recall": 0.884615,
+      "f1": 0.807018,
+      "tp": 23,
+      "fp": 8,
+      "fn": 3,
+      "tn": 1086,
+      "predicted_positive": 31,
+      "average_precision": 0.710655,
+      "roc_auc": 0.933518,
+      "overall_score_summary": {
+        "min": 0.0005831,
+        "median": 0.00221107,
+        "p90": 0.01249887,
+        "p99": 0.992848,
+        "max": 0.99739756,
+        "mean": 0.03418665
+      },
+      "positive_window_scores": {
+        "min": 0.00221107,
+        "median": 0.96745749,
+        "p90": 0.99727855,
+        "p99": 0.99739756,
+        "max": 0.99739756,
+        "mean": 0.83575904
+      },
+      "negative_window_scores": {
+        "min": 0.0005831,
+        "median": 0.00221107,
+        "p90": 0.0093688,
+        "p99": 0.24419984,
+        "max": 0.99739756,
+        "mean": 0.01513648
+      }
+    },
+    "XGBoost": {
+      "precision": 0.833333,
+      "recall": 0.384615,
+      "f1": 0.526316,
+      "tp": 10,
+      "fp": 2,
+      "fn": 16,
+      "tn": 1092,
+      "predicted_positive": 12,
+      "average_precision": 0.676726,
+      "roc_auc": 0.898731,
+      "overall_score_summary": {
+        "min": 8.942e-05,
+        "median": 0.00022653,
+        "p90": 0.00597693,
+        "p99": 0.52503764,
+        "max": 0.87463802,
+        "mean": 0.01388281
+      },
+      "positive_window_scores": {
+        "min": 0.00010859,
+        "median": 0.34543023,
+        "p90": 0.8436484,
+        "p99": 0.87154908,
+        "max": 0.87463802,
+        "mean": 0.40632448
+      },
+      "negative_window_scores": {
+        "min": 8.942e-05,
+        "median": 0.00022653,
+        "p90": 0.00326629,
+        "p99": 0.04101449,
+        "max": 0.87463802,
+        "mean": 0.00455604
+      }
+    },
+    "LSTM": {
+      "precision": 0.145833,
+      "recall": 0.269231,
+      "f1": 0.189189,
+      "tp": 7,
+      "fp": 41,
+      "fn": 19,
+      "tn": 1053,
+      "predicted_positive": 48,
+      "average_precision": 0.303782,
+      "roc_auc": 0.939952,
+      "overall_score_summary": {
+        "min": 1.698e-05,
+        "median": 0.0003763,
+        "p90": 0.19101246,
+        "p99": 0.71437277,
+        "max": 0.73393703,
+        "mean": 0.05338335
+      },
+      "positive_window_scores": {
+        "min": 0.0280883,
+        "median": 0.22817109,
+        "p90": 0.71930146,
+        "p99": 0.73157544,
+        "max": 0.73393703,
+        "mean": 0.33999346
+      },
+      "negative_window_scores": {
+        "min": 1.698e-05,
+        "median": 0.0003763,
+        "p90": 0.16360376,
+        "p99": 0.68373927,
+        "max": 0.7285136,
+        "mean": 0.04657178
+      }
+    },
+    "Stacking ensemble": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 26,
+      "tn": 1094,
+      "predicted_positive": 0,
+      "average_precision": 0.53965,
+      "roc_auc": 0.971734,
+      "overall_score_summary": {
+        "min": 0.00267334,
+        "median": 0.00267794,
+        "p90": 0.00420152,
+        "p99": 0.01939038,
+        "max": 0.04988411,
+        "mean": 0.00360221
+      },
+      "positive_window_scores": {
+        "min": 0.00316397,
+        "median": 0.01138097,
+        "p90": 0.0392905,
+        "p99": 0.0488683,
+        "max": 0.04988411,
+        "mean": 0.01772291
+      },
+      "negative_window_scores": {
+        "min": 0.00267334,
+        "median": 0.00267612,
+        "p90": 0.00382554,
+        "p99": 0.01232711,
+        "max": 0.02906542,
+        "mean": 0.00326662
+      }
+    }
+  },
+  "interpretation_note": "This is a post-training audit. Never select a threshold or hyperparameter using publisher TestOn. OOF training scores from the fitted meta model are in-sample for that meta model; new candidate thresholds require group-separated meta-level validation on TrainOn only."
+}

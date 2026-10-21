@@ -1,0 +1,142 @@
+{
+  "experiment": "PP1 public CloudTrail balanced meta-learner comparison",
+  "candidate": "LogisticRegression class_weight=balanced, C=0.7, threshold=0.5",
+  "meta_coefficients": {
+    "Random Forest": 8.166199728248124,
+    "LightGBM": 7.151141502723485,
+    "XGBoost": 4.286299104302182,
+    "LSTM": 6.553471105438557
+  },
+  "meta_intercept": -1.4234193917118194,
+  "train_windows": 4313,
+  "train_positive_windows": 13,
+  "test_windows": 1120,
+  "test_positive_windows": 26,
+  "test_metrics": {
+    "LightGBM": {
+      "precision": 0.7419354838709677,
+      "recall": 0.8846153846153846,
+      "f1": 0.8070175438596491,
+      "tp": 23,
+      "fp": 8,
+      "fn": 3,
+      "tn": 1086,
+      "predicted_positive": 31,
+      "score_min": 0.0005830973289551,
+      "score_median": 0.0022110722806327,
+      "score_max": 0.997397559701102,
+      "average_precision": 0.7106554917382677,
+      "roc_auc": 0.9335184924764448
+    },
+    "Previous stacking": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 26,
+      "tn": 1094,
+      "predicted_positive": 0,
+      "score_min": 0.0026733431434191,
+      "score_median": 0.0026779417543336,
+      "score_max": 0.0498841139432058,
+      "average_precision": 0.5396499601466177,
+      "roc_auc": 0.9717339333427085
+    },
+    "Weighted stacking candidate": {
+      "precision": 0.20512820512820512,
+      "recall": 0.9230769230769231,
+      "f1": 0.3356643356643357,
+      "tp": 24,
+      "fp": 93,
+      "fn": 2,
+      "tn": 1001,
+      "predicted_positive": 117,
+      "score_min": 0.19626843101061228,
+      "score_median": 0.1975641732146243,
+      "score_max": 0.9999999995595974,
+      "average_precision": 0.7326397254867633,
+      "roc_auc": 0.983265363521305
+    }
+  },
+  "per_scenario_candidate": [
+    {
+      "scenario": "AnonymousS3Calls",
+      "seen_in_training": true,
+      "positive_test_windows": 2,
+      "detected_positive_windows": 2,
+      "window_recall": 1.0
+    },
+    {
+      "scenario": "AnonymousS3PentestWeirdAPIs",
+      "seen_in_training": false,
+      "positive_test_windows": 2,
+      "detected_positive_windows": 2,
+      "window_recall": 1.0
+    },
+    {
+      "scenario": "FullPersistenceCreationChain",
+      "seen_in_training": false,
+      "positive_test_windows": 1,
+      "detected_positive_windows": 1,
+      "window_recall": 1.0
+    },
+    {
+      "scenario": "MassDeleteMultipleBuckets",
+      "seen_in_training": false,
+      "positive_test_windows": 2,
+      "detected_positive_windows": 2,
+      "window_recall": 1.0
+    },
+    {
+      "scenario": "MassDeleteSingleBucket",
+      "seen_in_training": false,
+      "positive_test_windows": 2,
+      "detected_positive_windows": 2,
+      "window_recall": 1.0
+    },
+    {
+      "scenario": "MassGetMultipleBuckets",
+      "seen_in_training": true,
+      "positive_test_windows": 6,
+      "detected_positive_windows": 5,
+      "window_recall": 0.8333333333333334
+    },
+    {
+      "scenario": "MassGetSingleBucket",
+      "seen_in_training": true,
+      "positive_test_windows": 2,
+      "detected_positive_windows": 2,
+      "window_recall": 1.0
+    },
+    {
+      "scenario": "MassPutMultipleBuckets",
+      "seen_in_training": false,
+      "positive_test_windows": 7,
+      "detected_positive_windows": 7,
+      "window_recall": 1.0
+    },
+    {
+      "scenario": "MassPutSingleBucket",
+      "seen_in_training": false,
+      "positive_test_windows": 4,
+      "detected_positive_windows": 3,
+      "window_recall": 0.75
+    },
+    {
+      "scenario": "RootFederationTokenGeneration",
+      "seen_in_training": false,
+      "positive_test_windows": 1,
+      "detected_positive_windows": 1,
+      "window_recall": 1.0
+    }
+  ],
+  "important_limitations": [
+    "Class-weighted scores are not automatically calibrated probabilities.",
+    "Only a few independent positive actor-day training groups are available.",
+    "The meta-level group CV is not fully nested base-model validation.",
+    "The publisher split shares actor identities even after actor/time-window overlap removal.",
+    "The publisher test set was examined in the previous baseline diagnosis; any future choices influenced by those results are exploratory.",
+    "This candidate uses a fixed protocol; test labels were not used to choose its parameters or threshold."
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Member 2 to Member 4 PROTO v2 — proposed integration contract",
+  "description": "Original CloudTrail records are referenced by source-file path and 1-based index. Member 4 to confirm nullable resource_id and uncalibrated score semantics.",
+  "type": "object",
+  "required": ["schema_version", "status", "source", "score_type", "model_output_task", "evidence_source", "evidence_source_sha256", "findings"],
+  "properties": {
+    "schema_version": {"const": "member2_to_member4_proto_v2"},
+    "status": {"type": "string", "minLength": 1},
+    "source": {"type": "string", "minLength": 1},
+    "score_type": {"const": "uncalibrated_model_score"},
+    "model_output_task": {"const": "binary_benign_vs_malicious"},
+    "evidence_source": {"type": "string", "minLength": 1},
+    "evidence_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["finding_id", "timestamp", "timestamp_type", "entity_id", "entity_id_type", "resource_id", "resource_ids", "service", "event_source", "event_name", "event_name_type", "prediction", "predicted_binary", "confidence", "confidence_type", "evidence_reference", "evidence_record_numbers", "evidence_event_ids", "api_operations", "aws_services", "event_count", "model_disagreement", "attack_category"],
+      "properties": {
+        "finding_id": {"type":"string", "minLength":1},
+        "timestamp": {"type":"string", "format":"date-time"},
+        "timestamp_type": {"const":"window_start_utc"},
+        "entity_id": {"type":"string", "pattern":"^actor_hash:.+"},
+        "entity_id_type": {"const":"pseudonymous_actor_group"},
+        "resource_id": {"type":["string", "null"], "pattern":"^arn:"},
+        "resource_ids": {"type":"array", "uniqueItems":true, "items":{"type":"string", "pattern":"^arn:"}},
+        "service": {"type":"string", "minLength":1},
+        "event_source": {"type":"string", "minLength":1},
+        "event_name": {"type":"string", "minLength":1},
+        "event_name_type": {"enum":["sole_operation", "representative_highest_count"]},
+        "prediction": {"enum":["Benign", "Malicious"]},
+        "predicted_binary": {"type":"integer", "enum":[0, 1]},
+        "confidence": {"type":"number", "minimum":0, "maximum":1},
+        "confidence_type": {"const":"uncalibrated_model_score"},
+        "evidence_reference": {"type":"string", "minLength":1},
+        "evidence_record_numbers": {"type":"array", "minItems":1, "uniqueItems":true, "items":{"type":"integer", "minimum":1}},
+        "evidence_event_ids": {"type":"array", "uniqueItems":true, "items":{"type":"string", "minLength":1}},
+        "api_operations": {"type":"object", "minProperties":1, "additionalProperties":{"type":"integer", "minimum":1}},
+        "aws_services": {"type":"array", "minItems":1, "uniqueItems":true, "items":{"type":"string", "minLength":1}},
+        "event_count": {"type":"integer", "minimum":1},
+        "model_disagreement": {"type":"number", "minimum":0, "maximum":1},
+        "attack_category": {"type":"null"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

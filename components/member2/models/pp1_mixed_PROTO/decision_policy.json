@@ -1,0 +1,38 @@
+{
+  "schema_version": "member2_decision_policy_v1",
+  "model_variant": "pp1_mixed_PROTO",
+  "policy_name": "mixed_source_prototype_default_threshold",
+  "decision_threshold": 0.5,
+  "threshold_selection_protocol": "Standard default classification threshold 0.5; mixed-source training",
+  "test_set_used_for_tuning": false,
+  "scoring_objective": "mixed_source_exploratory_prototype",
+  "calibration_status": "uncalibrated_model_scores",
+  "calibration_warning": "Model confidence outputs are uncalibrated regression scores and should not be interpreted as Bayesian posterior probabilities of compromise.",
+  "validation_protocol": "3-fold StratifiedGroupKFold on disjoint scenario/session groups",
+  "train_samples": {
+    "total_windows": 797,
+    "positive_windows": "mixed"
+  },
+  "test_samples": {
+    "total_windows": 173,
+    "positive_windows": 30
+  },
+  "meta_learner": {
+    "type": "LogisticRegression",
+    "class_weight": null,
+    "C": 1.0,
+    "random_state": 4010,
+    "probability_input_order": [
+      "Random Forest",
+      "LightGBM",
+      "XGBoost",
+      "LSTM"
+    ]
+  },
+  "artifact_sha256": {
+    "tree_models_and_meta": "c3d4229b69836b02e525aab2ebda2888e089bf53f9b209cf651ce5632d4709bf",
+    "lstm": "6dd93cfecc2f6ff96e50db23099f5fc63076d1f9f83ab52f9f36cf6192b977bb",
+    "feature_whitelist": "4aab6dbc3879619eec94df0d70ca5b225998ad5adc69991cdce6a40b04355695"
+  }
+}
+

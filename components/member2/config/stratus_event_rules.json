@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "policy": "These are review candidates supported by Stratus named detonation files, not independently adjudicated ML labels. No benign labels are assigned. Keep all excluded events in audit files.",
+  "scenarios": {
+    "aws.discovery.ec2-download-user-data": {"research_class":"Discovery", "event_names":["DescribeInstanceAttribute"]},
+    "aws.privilege-escalation.iam-update-user-login-profile": {"research_class":"Privilege Escalation", "event_names":["UpdateLoginProfile"]},
+    "aws.persistence.iam-backdoor-role": {"research_class":"Persistence", "event_names":["UpdateAssumeRolePolicy"]},
+    "aws.persistence.iam-backdoor-user": {"research_class":"Persistence", "event_names":["CreateAccessKey"]},
+    "aws.persistence.iam-create-admin-user": {"research_class":"Persistence", "event_names":["CreateUser", "AttachUserPolicy", "CreateAccessKey"]},
+    "aws.persistence.iam-create-backdoor-role": {"research_class":"Persistence", "event_names":["CreateRole", "AttachRolePolicy"]},
+    "aws.persistence.iam-create-user-login-profile": {"research_class":"Persistence", "event_names":["CreateLoginProfile"]},
+    "aws.persistence.lambda-backdoor-function": {"research_class":"Persistence", "event_names":["AddPermission20150331v2"]},
+    "aws.persistence.lambda-layer-extension": {"research_class":"Persistence", "event_names":["UpdateFunctionConfiguration20150331v2"]},
+    "aws.persistence.lambda-overwrite-code": {"research_class":"Persistence", "event_names":["UpdateFunctionCode20150331v2"]},
+    "aws.persistence.rolesanywhere-create-trust-anchor": {"research_class":"Persistence", "event_names":["CreateTrustAnchor", "CreateProfile"]},
+    "aws.persistence.sts-federation-token": {"research_class":"Persistence", "event_names":["GetFederationToken"]},
+    "aws.defense-evasion.cloudtrail-delete": {"research_class":"Defense Evasion", "event_names":["DeleteTrail"]},
+    "aws.defense-evasion.cloudtrail-event-selectors": {"research_class":"Defense Evasion", "event_names":["PutEventSelectors"]},
+    "aws.defense-evasion.cloudtrail-stop": {"research_class":"Defense Evasion", "event_names":["StopLogging"]},
+    "aws.defense-evasion.dns-delete-logs": {"research_class":"Defense Evasion", "event_names":["DeleteResolverQueryLogConfig"]},
+    "aws.defense-evasion.organizations-leave": {"research_class":"Defense Evasion", "event_names":["LeaveOrganization"]},
+    "aws.defense-evasion.vpc-remove-flow-logs": {"research_class":"Defense Evasion", "event_names":["DeleteFlowLogs"]}
+  }
+}
