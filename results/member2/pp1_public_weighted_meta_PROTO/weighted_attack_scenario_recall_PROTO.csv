@@ -1,0 +1,11 @@
+﻿scenario,seen_in_training,positive_test_windows,detected_positive_windows,window_recall
+AnonymousS3Calls,True,2,2,1.0
+AnonymousS3PentestWeirdAPIs,False,2,2,1.0
+FullPersistenceCreationChain,False,1,1,1.0
+MassDeleteMultipleBuckets,False,2,2,1.0
+MassDeleteSingleBucket,False,2,2,1.0
+MassGetMultipleBuckets,True,6,5,0.8333333333333334
+MassGetSingleBucket,True,2,2,1.0
+MassPutMultipleBuckets,False,7,7,1.0
+MassPutSingleBucket,False,4,3,0.75
+RootFederationTokenGeneration,False,1,1,1.0

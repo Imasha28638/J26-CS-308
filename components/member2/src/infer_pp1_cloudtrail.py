@@ -229,6 +229,25 @@ def load_models(folder: Path):
 
 def training_provenance(models_dir: Path) -> dict:
     """Read provenance from local model outputs; do not infer it from a filename."""
+    weighted_report = models_dir / "weighted_meta_experiment_report_PROTO.json"
+    if weighted_report.is_file():
+        metadata = json.loads(weighted_report.read_text(encoding="utf-8-sig"))
+        policy_path = models_dir / "decision_policy.json"
+        policy = json.loads(policy_path.read_text(encoding="utf-8-sig")) if policy_path.is_file() else {}
+        return {
+            "training_sources": [
+                "Publisher-labeled AWS CloudTrail TrainOn collection (balanced meta-training)",
+                "Ariel Cyber Innovation Center benchmark",
+            ],
+            "evaluation_scope": (
+                "Publisher-defined TrainOn/TestOn evaluation with balanced stacking meta-learner; "
+                "fixed C=0.7 and class_weight=balanced on training OOF predictions."
+            ),
+            "external_attack_recall": None,
+            "model_status": "PROTO_PUBLIC_WEIGHTED_STACKING",
+            "decision_policy": policy.get("policy_name", "balanced_meta_learner_fixed_threshold"),
+            "validated_threshold": policy.get("decision_threshold", 0.5),
+        }
     mixed_report = models_dir / "mixed_experiment_report_PROTO.json"
     if mixed_report.is_file():
         metadata = json.loads(mixed_report.read_text(encoding="utf-8-sig"))
@@ -281,8 +300,22 @@ def training_provenance(models_dir: Path) -> dict:
     }
 
 
-def run(input_path, models_dir, output_path, minutes=5, threshold=0.5,
+def run(input_path, models_dir, output_path, minutes=5, threshold=None,
         on_missing_readonly="error", include_event_ids=False):
+    threshold_source = "manual_override"
+    if threshold is None:
+        policy_file = models_dir / "decision_policy.json"
+        if policy_file.is_file():
+            try:
+                policy_data = json.loads(policy_file.read_text(encoding="utf-8-sig"))
+                threshold = float(policy_data.get("decision_threshold", 0.5))
+                threshold_source = "saved_decision_policy"
+            except Exception:
+                threshold = 0.5
+                threshold_source = "default_fallback"
+        else:
+            threshold = 0.5
+            threshold_source = "default_fallback"
     if not 0 < threshold < 1:
         raise ValueError("Threshold must be greater than 0 and less than 1")
     raw = parse_cloudtrail(input_path)
@@ -350,6 +383,7 @@ def run(input_path, models_dir, output_path, minutes=5, threshold=0.5,
         "input_filename":input_path.name,
         "source_record_count":len(clean), "window_count":len(windows),
         "window_minutes":minutes,"decision_threshold":threshold,
+        "threshold_source":threshold_source,
         "classification_task":"binary_benign_vs_malicious",
         "attack_category_prediction_supported":False,
         "score_interpretation":"Uncalibrated model scores; external CloudTrail evaluation is in progress.",
@@ -392,7 +426,7 @@ def main():
     ap.add_argument("--models-dir",type=Path,default=Path("Data/Experiments/pp1_binary"))
     ap.add_argument("--output",type=Path,default=Path("Data/Experiments/pp1_inference/pp1_predictions_PROTO.json"))
     ap.add_argument("--window-minutes",type=int,default=5)
-    ap.add_argument("--threshold",type=float,default=0.5)
+    ap.add_argument("--threshold",type=float,default=None,help="Decision threshold (default: read from decision_policy.json or 0.5)")
     ap.add_argument("--on-missing-readonly",choices=("error","assume-read"),default="error")
     ap.add_argument("--include-event-ids",action="store_true",help="Include original CloudTrail IDs in JSON output")
     args = ap.parse_args()
