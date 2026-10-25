@@ -1,0 +1,9 @@
+fastapi>=0.110
+uvicorn>=0.29
+streamlit>=1.40
+pandas
+numpy
+scipy
+joblib
+# Must match the scikit-learn version printed by Colab Cell 45, e.g. scikit-learn==1.6.1
+scikit-learn

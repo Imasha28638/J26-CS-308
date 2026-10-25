@@ -1,0 +1,5 @@
+# Member 4 local files (not for the repo)
+.venv312/
+reviews.jsonl
+sklearn_version.txt
+_backup_*/

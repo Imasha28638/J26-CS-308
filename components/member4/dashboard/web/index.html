@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TetraTrace · IaC Layer Investigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#05060A; --graphite:#11141B; --border:#1C2130; --ink:#F4F7FB; --mist:#9AA3B2;
+  --cyan:#00F0FF; --magenta:#FF2E97; --violet:#A06BFF; --lime:#B4FF39; --amber:#FFC23D;
+  --crit:#FF4D5E; --high:#FF8A3D; --panel2:#0B0D13;
+  --r:12px; --mono:'JetBrains Mono',ui-monospace,monospace; --sans:'Space Grotesk',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--void);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{background:
+  radial-gradient(900px 400px at 85% -10%, rgba(255,194,61,.06), transparent 60%),
+  radial-gradient(800px 380px at 0% 0%, rgba(0,240,255,.05), transparent 60%), var(--void);min-height:100vh}
+a{color:var(--cyan)}
+.mono{font-family:var(--mono)}
+.muted{color:var(--mist)}
+.wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:20;background:rgba(5,6,10,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.hbar{display:flex;align-items:center;gap:22px;height:68px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0}
+.wordmark{font-family:'Unbounded',sans-serif;font-weight:700;font-size:20px;letter-spacing:.04em;line-height:1}
+.wordmark .t{color:var(--ink)} .wordmark .r{color:var(--cyan);text-shadow:0 0 12px rgba(0,240,255,.55)}
+.tagline{font-family:var(--mono);font-size:10.5px;color:var(--mist);letter-spacing:.06em;margin-top:5px}
+nav.layers{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+nav.layers::-webkit-scrollbar{display:none}
+.lchip{display:flex;align-items:center;gap:8px;padding:7px 13px;border-radius:999px;border:1px solid var(--border);font-family:var(--mono);font-size:11.5px;color:var(--mist);white-space:nowrap;background:transparent}
+.lchip i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.lchip.on{color:var(--ink);border-color:rgba(255,194,61,.55);background:rgba(255,194,61,.07)}
+.lchip.on i{box-shadow:0 0 8px var(--amber)}
+.status{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--mist);padding:7px 12px;border:1px solid var(--border);border-radius:999px;white-space:nowrap}
+.status .dot{width:8px;height:8px;border-radius:50%;background:#555}
+.status.ok .dot{background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:pulse 2s infinite}
+.status.bad .dot{background:var(--crit)}
+@keyframes pulse{50%{opacity:.45}}
+
+/* ---------- case bar ---------- */
+.case{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px;padding:30px 0 22px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;color:var(--mist);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.badge-layer{color:var(--amber);border:1px solid rgba(255,194,61,.45);border-radius:999px;padding:4px 10px;letter-spacing:.08em}
+h1{font-family:'Unbounded',sans-serif;font-weight:700;font-size:clamp(22px,3.2vw,34px);margin:12px 0 8px;letter-spacing:.01em}
+h1 .k{color:var(--amber);text-shadow:0 0 14px rgba(255,194,61,.35)}
+.lede{color:var(--mist);max-width:720px;line-height:1.55;margin:0;font-size:15px}
+.caseid{font-family:var(--mono);font-size:12px;color:var(--mist);text-align:right;line-height:1.7}
+.caseid b{color:var(--ink);font-weight:500}
+
+/* ---------- layout ---------- */
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:18px;padding-bottom:40px}
+.col{display:flex;flex-direction:column;gap:18px;min-width:0}
+.card{background:var(--graphite);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card h2{font-size:15px;font-weight:600;margin:0;display:flex;align-items:center;gap:10px}
+.card h2 .n{font-family:var(--mono);font-size:11px;color:var(--cyan);border:1px solid rgba(0,240,255,.35);border-radius:999px;padding:2px 8px}
+.chead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.hint{font-family:var(--mono);font-size:11px;color:var(--mist)}
+
+/* tabs + segmented */
+.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--border);border-radius:999px;padding:3px;gap:2px}
+.seg button{background:transparent;border:0;color:var(--mist);font-family:var(--sans);font-size:13px;padding:7px 14px;border-radius:999px;cursor:pointer}
+.seg button.on{background:#1A1F2C;color:var(--ink)}
+.pane{display:none}.pane.on{display:block}
+
+/* editor */
+.editor{display:flex;background:var(--panel2);border:1px solid var(--border);border-radius:10px;overflow:hidden;height:340px}
+.gutter{font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#4A5366;text-align:right;padding:12px 8px 12px 12px;user-select:none;overflow:hidden;white-space:pre;min-width:42px}
+textarea{flex:1;resize:none;background:transparent;border:0;outline:0;color:var(--ink);font-family:var(--mono);font-size:12.5px;line-height:1.6;padding:12px 12px 12px 4px;white-space:pre;overflow:auto;tab-size:2}
+textarea::placeholder{color:#4A5366}
+.editor:focus-within{border-color:rgba(0,240,255,.45)}
+.drop{border:1px dashed #2A3144;border-radius:10px;padding:34px 16px;text-align:center;color:var(--mist);cursor:pointer;transition:.2s}
+.drop.over,.drop:hover{border-color:var(--cyan);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.fchip{font-family:var(--mono);font-size:11.5px;border:1px solid var(--border);border-radius:999px;padding:5px 6px 5px 11px;display:flex;align-items:center;gap:6px;color:var(--ink)}
+.fchip button{background:none;border:0;color:var(--mist);cursor:pointer;font-size:14px;line-height:1}
+.samples{display:grid;gap:10px}
+.sample{text-align:left;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:13px 14px;color:var(--ink);cursor:pointer;font-family:var(--sans);font-size:14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.sample:hover{border-color:rgba(0,240,255,.45)}
+.sample span{font-family:var(--mono);font-size:11px;color:var(--mist)}
+
+.policy{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.policy .lbl{font-family:var(--mono);font-size:11px;color:var(--mist);letter-spacing:.08em;margin-bottom:8px}
+.policy p{margin:8px 0 0;font-size:12.5px;color:var(--mist);line-height:1.5}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center}
+.btn{border-radius:999px;padding:11px 22px;font-family:var(--sans);font-weight:600;font-size:14px;cursor:pointer;border:1px solid transparent;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--cyan);color:#000;box-shadow:0 0 18px rgba(0,240,255,.35)}
+.btn.primary:hover{box-shadow:0 0 26px rgba(0,240,255,.6)}
+.btn.primary:disabled{opacity:.45;box-shadow:none;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border-color:#2E3548}
+.btn.ghost:hover{border-color:var(--cyan)}
+.btn.sm{padding:7px 14px;font-size:12.5px}
+
+/* pipeline */
+.pipe{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding-top:6px}
+.pipe .rail{position:absolute;left:10%;right:10%;top:27px;height:2px;background:#202637}
+.pipe .rail i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--cyan);box-shadow:0 0 10px var(--cyan);transition:width .35s ease}
+.stage{position:relative;text-align:center;z-index:1}
+.node{width:44px;height:44px;margin:0 auto;border-radius:50%;background:var(--void);border:2px solid #2A3144;display:grid;place-items:center;font-family:var(--mono);font-size:12px;color:var(--mist);transition:.3s}
+.stage.active .node{border-color:var(--cyan);color:var(--ink);box-shadow:0 0 0 4px rgba(0,240,255,.12),0 0 16px rgba(0,240,255,.5);animation:pulse 1s infinite}
+.stage.done .node{border-color:var(--cyan);color:#000;background:var(--cyan);box-shadow:0 0 14px rgba(0,240,255,.6)}
+.stage .t{font-size:13px;font-weight:600;margin-top:10px}
+.stage .s{font-family:var(--mono);font-size:11px;color:var(--mist);margin-top:4px;min-height:30px;line-height:1.45}
+.pipe-foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* verdict + kpis */
+.verdict{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-radius:10px;padding:16px 18px;border:1px solid var(--border);background:var(--panel2)}
+.verdict .v{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;letter-spacing:.02em}
+.verdict .d{color:var(--mist);font-size:13.5px;margin-top:4px}
+.v-crit .v{color:var(--crit);text-shadow:0 0 14px rgba(255,77,94,.45)} .v-crit{border-color:rgba(255,77,94,.4)}
+.v-high .v{color:var(--high);text-shadow:0 0 14px rgba(255,138,61,.4)} .v-high{border-color:rgba(255,138,61,.4)}
+.v-rev .v{color:var(--cyan);text-shadow:0 0 12px rgba(0,240,255,.4)}
+.v-ok .v{color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.kpi{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:13px 14px}
+.kpi .k{font-family:var(--mono);font-size:10.5px;color:var(--mist);letter-spacing:.08em}
+.kpi .n{font-size:26px;font-weight:600;margin-top:6px}
+.sevbar{display:flex;height:10px;border-radius:999px;overflow:hidden;background:#1A1F2C;margin-top:14px}
+.sevbar span{height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--mist)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+
+/* findings */
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.fbtn{font-family:var(--mono);font-size:11.5px;color:var(--mist);background:transparent;border:1px solid var(--border);border-radius:999px;padding:6px 12px;cursor:pointer}
+.fbtn.on{color:var(--ink);border-color:rgba(0,240,255,.5)}
+.flist{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.finding{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:16px;align-items:center}
+.finding .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;border-radius:999px;padding:3px 9px;border:1px solid var(--border);color:var(--mist)}
+.tag.act{color:#FF7A86;border-color:rgba(255,77,94,.55);background:rgba(255,77,94,.1)}
+.tag.rev{color:var(--cyan);border-color:rgba(0,240,255,.5);border-style:dashed}
+.tag.CRITICAL{color:var(--crit);border-color:rgba(255,77,94,.45)}
+.tag.HIGH{color:var(--high);border-color:rgba(255,138,61,.45)}
+.tag.MEDIUM{color:var(--ink);border-color:#3A4257}
+.tag.LOW{color:var(--mist)}
+.rule{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+.finding .title{margin:8px 0 6px;font-size:14.5px;line-height:1.45}
+.finding .meta{font-family:var(--mono);font-size:11px;color:var(--mist);display:flex;gap:12px;flex-wrap:wrap}
+.tokens{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.tok{font-family:var(--mono);font-size:11px;color:var(--ink);background:#151A25;border:1px solid var(--border);border-radius:6px;padding:2px 7px}
+.meter .lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--mist)}
+.meter .lab b{color:var(--ink);font-weight:500;font-size:13px}
+.track{position:relative;height:8px;border-radius:999px;background:#1A1F2C;margin:10px 0 6px}
+.track .band{position:absolute;top:0;bottom:0;background:rgba(0,240,255,.14)}
+.track .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,rgba(0,240,255,.25),var(--cyan));box-shadow:0 0 8px rgba(0,240,255,.5)}
+.track .mk{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);opacity:.7}
+.meter .ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:#5A6377}
+.empty{padding:34px 10px;text-align:center;color:var(--mist);font-size:14px;line-height:1.6}
+/* human review */
+.revbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:12px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--panel2)}
+.revbar label{font-family:var(--mono);font-size:11px;color:var(--mist);letter-spacing:.06em}
+.revbar input{background:#0E1119;border:1px solid #2E3548;border-radius:8px;color:var(--ink);font-family:var(--sans);font-size:13.5px;padding:7px 10px;width:180px}
+.revbar input:focus,.review input:focus{outline:none;border-color:var(--cyan)}
+.revcount{font-family:var(--mono);font-size:12px;color:var(--ink)}
+.revcount b{color:var(--cyan);font-weight:600}
+.review{grid-column:1/-1;border-top:1px dashed var(--border);padding-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.review .q{font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:.06em;margin-right:4px}
+.review input{flex:1 1 200px;min-width:0;background:#0E1119;border:1px solid #2E3548;border-radius:8px;color:var(--ink);font-family:var(--sans);font-size:13px;padding:7px 10px}
+.rbtn{font-family:var(--sans);font-size:12.5px;font-weight:600;border-radius:999px;padding:7px 13px;cursor:pointer;background:transparent;border:1px solid #2E3548;color:var(--ink)}
+.rbtn.yes:hover{border-color:var(--crit);color:#FF7A86}
+.rbtn.no:hover{border-color:var(--lime);color:var(--lime)}
+.rbtn.link{border:0;padding:4px 6px;color:var(--mist);text-decoration:underline;font-weight:500}
+.rdone{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px}
+.rtag{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;border-radius:999px;padding:3px 9px}
+.rtag.confirmed{color:#FF7A86;border:1px solid rgba(255,77,94,.55);background:rgba(255,77,94,.1)}
+.rtag.not_a_problem{color:var(--lime);border:1px solid rgba(180,255,57,.5);background:rgba(180,255,57,.08)}
+.rnote{color:var(--mist);font-size:12.5px}
+.rerr{flex-basis:100%;font-size:12.5px;color:#FF7A86}
+.warn{font-size:13px;color:var(--ink);background:rgba(255,194,61,.07);border:1px solid rgba(255,194,61,.3);border-radius:10px;padding:10px 12px;margin-top:12px}
+.err{background:rgba(255,77,94,.08);border-color:rgba(255,77,94,.4)}
+
+/* export / schema / model */
+pre.code{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px;font-family:var(--mono);font-size:11.5px;line-height:1.55;color:var(--ink);overflow:auto;max-height:260px;margin:0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:13px}
+.kv dt{font-family:var(--mono);font-size:11px;color:var(--mist);padding-top:2px}
+.kv dd{margin:0;word-break:break-word}
+.layerrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.lcard{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--panel2)}
+.lcard .nm{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em}
+.lcard .ds{font-size:12.5px;color:var(--mist);margin-top:4px}
+.lcard.on{border-color:rgba(255,194,61,.5)}
+footer{border-top:1px solid var(--border);padding:22px 0 34px;color:var(--mist);font-size:12.5px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--graphite);border:1px solid rgba(0,240,255,.5);color:var(--ink);padding:10px 16px;border-radius:999px;font-size:13px;transition:.25s;z-index:50}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+
+/* evaluation evidence */
+.evid{margin-bottom:40px}
+.evpane{display:none}.evpane.on{display:block}
+.evlead{color:var(--mist);font-size:14px;line-height:1.55;margin:0 0 14px}
+.evlead b{color:var(--ink);font-weight:600}
+.pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;border-radius:999px;padding:3px 10px;margin-left:6px;white-space:nowrap}
+.pill.ok{color:#000;background:var(--cyan);box-shadow:0 0 12px rgba(0,240,255,.45)}
+.evgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px}
+.stat .k{font-family:var(--mono);font-size:10.5px;color:var(--mist);letter-spacing:.06em;line-height:1.4}
+.stat .v{font-size:22px;margin-top:8px;color:var(--mist)}
+.stat .v b{color:var(--ink);font-weight:600}.stat .v span{color:var(--cyan);margin:0 4px}
+.stat .d{font-family:var(--mono);font-size:11px;color:var(--mist);margin-top:6px;line-height:1.45}
+.evnote{font-size:12.5px;color:var(--mist);line-height:1.55;margin:12px 0 0}
+.tbl{overflow-x:auto;border:1px solid var(--border);border-radius:10px;margin-top:12px}
+.tbl table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+.tbl th{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--mist);text-align:left;font-weight:500;padding:10px 12px;border-bottom:1px solid var(--border);background:var(--panel2)}
+.tbl td{padding:9px 12px;border-bottom:1px solid #161B26;color:var(--ink)}
+.tbl td:nth-child(n+3){font-family:var(--mono);font-size:12.5px}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tr.hl td{background:rgba(0,240,255,.05)}
+.tbl em{color:var(--mist);font-style:normal}
+.bars{display:grid;gap:12px;margin:6px 0 4px}
+.brow{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:center}
+.brow .nm{font-size:13px}
+.brow .nm small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--mist)}
+.bpair{display:grid;gap:5px}
+.bar{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--mist)}
+.bar i{display:block;height:9px;border-radius:999px;min-width:2px}
+@media (max-width:1080px){.evgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:700px){.evgrid{grid-template-columns:1fr}.brow{grid-template-columns:1fr;gap:6px}}
+@media (max-width:1080px){.grid{grid-template-columns:minmax(0,1fr)}.col{display:contents}.finding{grid-template-columns:1fr}
+  .grid>.card{min-width:0}.o1{order:1}.o2{order:2}.o3{order:3}.o4{order:4}.o5{order:5}.o6{order:6}}
+@media (max-width:700px){
+  .wrap{padding:0 16px}
+  header{position:static}
+  .hbar{height:auto;flex-wrap:wrap;padding:12px 0;gap:10px}
+  .lchip{padding:6px 10px;font-size:11px}
+  nav.layers{order:3;width:100%;margin-left:0}
+  .status{margin-left:auto}
+  .tagline{display:none}
+  .caseid{text-align:left}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .layerrow{grid-template-columns:repeat(2,1fr)}
+  .pipe{grid-template-columns:1fr;gap:0}
+  .pipe .rail{left:21px;right:auto;top:22px;bottom:22px;width:2px;height:auto}
+  .pipe .rail i{width:2px!important;height:0;transition:height .35s ease}
+  .stage{display:grid;grid-template-columns:44px 1fr;column-gap:14px;text-align:left;padding:6px 0;align-items:center}
+  .stage .node{margin:0;grid-row:span 2}
+  .stage .t{margin-top:0}.stage .s{min-height:0}
+  .editor{height:280px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hbar">
+    <a class="brand" href="#" aria-label="TetraTrace home">
+      <svg viewBox="0 0 120 120" width="40" height="40" role="img" aria-label="TetraTrace logo" style="overflow:visible">
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="68" y1="70" x2="60" y2="14" stroke="#00F0FF" stroke-width="3" stroke-opacity="0.55"/>
+          <line x1="68" y1="70" x2="16" y2="98" stroke="#00F0FF" stroke-width="3" stroke-opacity="0.55"/>
+          <line x1="68" y1="70" x2="104" y2="98" stroke="#00F0FF" stroke-width="3" stroke-opacity="0.55"/>
+          <polygon points="60,14 16,98 104,98" stroke="#00F0FF" stroke-width="4.5" style="filter:drop-shadow(0 0 4px #00F0FF)"/>
+        </g>
+        <circle cx="60" cy="14" r="8" fill="#05060A" stroke="#A06BFF" stroke-width="4"/>
+        <circle cx="16" cy="98" r="8" fill="#05060A" stroke="#FF2E97" stroke-width="4"/>
+        <circle cx="104" cy="98" r="8" fill="#05060A" stroke="#FFC23D" stroke-width="4"/>
+        <circle cx="68" cy="70" r="6.5" fill="#05060A" stroke="#B4FF39" stroke-width="3.5"/>
+      </svg>
+      <div>
+        <div class="wordmark"><span class="t">TETRA</span><span class="r">TRACE</span></div>
+        <div class="tagline">Four layers. One incident story.</div>
+      </div>
+    </a>
+    <nav class="layers" aria-label="Evidence layers">
+      <span class="lchip" title="Member 1 · insider behaviour"><i style="background:var(--magenta)"></i>Identity</span>
+      <span class="lchip" title="Member 2 · CloudTrail"><i style="background:var(--violet)"></i>Cloud API</span>
+      <span class="lchip" title="Member 3 · eBPF"><i style="background:var(--lime)"></i>Workload</span>
+      <span class="lchip on" title="Member 4 · Terraform"><i style="background:var(--amber)"></i>IaC · Terraform</span>
+    </nav>
+    <div class="status" id="status"><span class="dot"></span><span id="statusText">CONNECTING…</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="case">
+    <div>
+      <div class="eyebrow"><span class="badge-layer">LAYER 04 · IaC · MEMBER 4</span><span>PRE-DEPLOYMENT EVIDENCE</span></div>
+      <h1>Terraform <span class="k">misconfiguration</span> analysis</h1>
+      <p class="lede">Submit Terraform code. The Member&nbsp;4 model scores it against 60 AWS security rules, calibrates each score into a probability, and routes every finding to <b style="color:var(--ink)">ACT</b>, <b style="color:var(--ink)">REVIEW</b> or <b style="color:var(--ink)">NO ALERT</b>.</p>
+    </div>
+    <div class="caseid">CASE <b id="caseId">—</b><br>ANALYST SESSION <b id="sessTime">—</b><br>SCANS THIS SESSION <b id="scanCount">0</b></div>
+  </section>
+
+  <div class="grid">
+    <!-- LEFT: input -->
+    <div class="col">
+      <section class="card o1" aria-labelledby="inTitle">
+        <div class="chead">
+          <h2 id="inTitle"><span class="n">01</span>Evidence input</h2>
+          <div class="seg" role="tablist">
+            <button class="on" data-pane="paste" role="tab">Paste</button>
+            <button data-pane="upload" role="tab">Upload .tf</button>
+            <button data-pane="samples" role="tab">Sample cases</button>
+          </div>
+        </div>
+
+        <div class="pane on" id="pane-paste">
+          <div class="editor">
+            <div class="gutter" id="gutter">1</div>
+            <textarea id="code" spellcheck="false" placeholder='resource "aws_s3_bucket" "example" {&#10;  bucket = "my-bucket"&#10;}'></textarea>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px"><span class="hint" id="codeStats">0 lines · 0 chars</span><span class="hint">file name: <span id="pasteName">input.tf</span></span></div>
+        </div>
+
+        <div class="pane" id="pane-upload">
+          <label class="drop" id="drop">
+            <input type="file" id="fileIn" accept=".tf" multiple hidden>
+            <div style="font-size:15px;color:var(--ink);margin-bottom:6px">Drop .tf files here or click to choose</div>
+            <div class="hint">Each file is scanned separately — the model works per file</div>
+          </label>
+          <div class="chips" id="fileChips"></div>
+        </div>
+
+        <div class="pane" id="pane-samples">
+          <div class="samples" id="samples"><div class="hint">Loading sample cases…</div></div>
+        </div>
+
+        <div class="policy">
+          <div class="lbl">DECISION POLICY</div>
+          <div class="seg" id="policySeg">
+            <button class="on" data-policy="v1">v1 · gold-tested</button>
+            <button data-policy="v2">v2 · risk-aware</button>
+          </div>
+          <p id="policyDesc">Same thresholds rule for every severity. Tested once on held-out gold data.</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="runBtn">Run analysis</button>
+          <button class="btn ghost" id="clearBtn">Clear</button>
+          <span class="hint" id="runHint"></span>
+        </div>
+        <div id="warnBox"></div>
+      </section>
+
+      <section class="card o5">
+        <div class="chead"><h2><span class="n">i</span>Incident layers</h2><span class="hint">TetraTrace correlation view</span></div>
+        <div class="layerrow">
+          <div class="lcard"><div class="nm" style="color:var(--magenta)">01 · IDENTITY</div><div class="ds">Member 1 · insider behaviour</div></div>
+          <div class="lcard"><div class="nm" style="color:var(--violet)">02 · CLOUD API</div><div class="ds">Member 2 · CloudTrail</div></div>
+          <div class="lcard"><div class="nm" style="color:var(--lime)">03 · WORKLOAD</div><div class="ds">Member 3 · eBPF</div></div>
+          <div class="lcard on"><div class="nm" style="color:var(--amber)">04 · IaC</div><div class="ds">Member 4 · Terraform (this view)</div></div>
+        </div>
+      </section>
+
+      <section class="card o6">
+        <div class="chead"><h2><span class="n">M</span>Model card</h2></div>
+        <dl class="kv" id="modelKv"><dt>STATUS</dt><dd class="muted">Loading…</dd></dl>
+      </section>
+    </div>
+
+    <!-- RIGHT: pipeline + results -->
+    <div class="col">
+      <section class="card o2">
+        <div class="chead"><h2><span class="n">02</span>ML pipeline · live</h2><span class="hint" id="pipeState">IDLE</span></div>
+        <div class="pipe" id="pipe">
+          <div class="rail"><i id="rail"></i></div>
+          <div class="stage" data-k="ingest"><div class="node">01</div><div class="t">Ingest</div><div class="s" id="s-ingest">waiting</div></div>
+          <div class="stage" data-k="features"><div class="node">02</div><div class="t">TF-IDF features</div><div class="s" id="s-features">word + char n-grams</div></div>
+          <div class="stage" data-k="model"><div class="node">03</div><div class="t">Linear SVM</div><div class="s" id="s-model">60 rule scores</div></div>
+          <div class="stage" data-k="calibration"><div class="node">04</div><div class="t">Calibration</div><div class="s" id="s-calibration">per-rule isotonic</div></div>
+          <div class="stage" data-k="policy"><div class="node">05</div><div class="t">Decision policy</div><div class="s" id="s-policy">ACT · REVIEW · NO ALERT</div></div>
+        </div>
+        <div class="pipe-foot"><span class="hint" id="pipeTime">Server time: —</span><span class="hint" id="pipePolicy">Policy: v1</span></div>
+      </section>
+
+      <section class="card o3">
+        <div class="chead"><h2><span class="n">03</span>Findings</h2>
+          <div class="filters" id="filters">
+            <button class="fbtn on" data-f="ALL">All</button>
+            <button class="fbtn" data-f="ACT">ACT</button>
+            <button class="fbtn" data-f="REVIEW">REVIEW</button>
+            <button class="fbtn" data-f="CH">Critical + High</button>
+            <button class="fbtn" data-f="TODO">Needs decision</button>
+            <button class="fbtn" data-f="DONE">Human-reviewed</button>
+          </div>
+        </div>
+        <div id="verdictWrap">
+          <div class="verdict"><div><div class="v" style="color:var(--mist)">NO ANALYSIS YET</div><div class="d">Paste Terraform, upload files or pick a sample case, then run the analysis.</div></div></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="k">ACT</div><div class="n" id="kAct">—</div></div>
+          <div class="kpi"><div class="k">REVIEW</div><div class="n" id="kRev">—</div></div>
+          <div class="kpi"><div class="k">CRITICAL + HIGH</div><div class="n" id="kCH">—</div></div>
+          <div class="kpi"><div class="k">FILES</div><div class="n" id="kFiles">—</div></div>
+        </div>
+        <div class="sevbar" id="sevbar"></div>
+        <div class="legend">
+          <span><i style="background:var(--crit)"></i>Critical</span><span><i style="background:var(--high)"></i>High</span>
+          <span><i style="background:#C9CFDA"></i>Medium</span><span><i style="background:#5A6377"></i>Low</span>
+        </div>
+        <div class="revbar">
+          <label for="reviewer">REVIEWER</label>
+          <input id="reviewer" type="text" maxlength="80" placeholder="Your name" autocomplete="name">
+          <span class="revcount" id="revCount">Human review: —</span>
+          <button class="btn ghost sm" id="dlReviews" style="margin-left:auto">Review log</button>
+        </div>
+        <div class="flist" id="flist"></div>
+      </section>
+
+      <section class="card o4">
+        <div class="chead"><h2><span class="n">04</span>Export · shared incident schema</h2>
+          <div class="actions" style="margin:0">
+            <button class="btn ghost sm" id="dlCsv" disabled>CSV</button>
+            <button class="btn ghost sm" id="dlJson" disabled>JSON</button>
+            <button class="btn ghost sm" id="cpJson" disabled>Copy</button>
+          </div>
+        </div>
+        <pre class="code" id="schema">// First finding appears here in the TetraTrace shared schema
+// (finding_id, source_component = "M4", decision, probability, thresholds, versions, evidence_reference)</pre>
+      </section>
+    </div>
+  </div>
+
+  <section class="card evid" aria-labelledby="evTitle">
+    <div class="chead">
+      <h2 id="evTitle"><span class="n">05</span>Evaluation evidence</h2>
+      <div class="seg" id="evSeg">
+        <button class="on" data-ev="gold">Gold test (H1)</button>
+        <button data-ev="scan">vs. scanners</button>
+        <button data-ev="cal">Calibration</button>
+        <button data-ev="abl">Ablation</button>
+      </div>
+    </div>
+
+    <div class="evpane on" id="ev-gold">
+      <p class="evlead">Pre-registered, run once on <b>578 clean gold files</b> the model never saw (human-verified labels, training copies removed). <span class="pill ok">H1 SUPPORTED</span></p>
+      <div class="evgrid">
+        <div class="stat"><div class="k">FALSE AUTOMATIC ALERTS / 100 FILES</div><div class="v">20.2 <span>→</span> <b>14.4</b></div><div class="d">−5.88 · 95% CI −9.34 to −2.77 · McNemar p = 3.9×10⁻⁴</div></div>
+        <div class="stat"><div class="k">RECALL (VIOLATIONS CAUGHT)</div><div class="v">0.792 <span>→</span> <b>0.873</b></div><div class="d">+0.081 · 95% CI +0.056 to +0.107</div></div>
+        <div class="stat"><div class="k">MISSED VIOLATIONS / 100 FILES</div><div class="v">37.7 <span>→</span> <b>23.0</b></div><div class="d">McNemar p = 4.8×10⁻¹⁹</div></div>
+        <div class="stat"><div class="k">COST: REVIEW ITEMS / 100 FILES</div><div class="v">0 <span>→</span> <b>88.9</b></div><div class="d">about 0.9 human checks per file</div></div>
+      </div>
+      <p class="evnote">Baseline = Linear SVM with a fixed threshold (E2). Policy = per-rule isotonic calibration + per-rule t_low / t_high (policy v1).</p>
+    </div>
+
+    <div class="evpane" id="ev-scan">
+      <p class="evlead">Real scanners (tfsec v1.28.14, Terrascan v1.19.9) on the same 578 clean gold files, all 60 rules.</p>
+      <div class="bars" id="scanBars"></div>
+      <div class="legend"><span><i style="background:var(--crit)"></i>False automatic alerts / 100 files</span><span><i style="background:var(--cyan)"></i>Missed violations / 100 files</span></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Rules</th><th>Method</th><th>ACT precision</th><th>Recall</th><th>False ACT /100</th><th>Missed /100</th><th>REVIEW /100</th></tr></thead>
+        <tbody>
+          <tr><td>tfsec (46)</td><td>tfsec alone</td><td>0.970</td><td>0.970</td><td>4.7</td><td>4.7</td><td>0</td></tr>
+          <tr><td>tfsec (46)</td><td>ML policy v1</td><td>0.903</td><td>0.889</td><td>14.4</td><td>17.3</td><td>6.2</td></tr>
+          <tr><td>Terrascan (14)</td><td>Terrascan alone</td><td>0.272</td><td>0.667</td><td>46.2</td><td>8.7</td><td>0</td></tr>
+          <tr><td>Terrascan (14)</td><td>ML policy v1</td><td>1.000</td><td>0.780</td><td>0.0</td><td>5.7</td><td>82.7</td></tr>
+          <tr class="hl"><td>All 60</td><td>Both scanners</td><td>0.768</td><td>0.927</td><td>50.9</td><td>13.3</td><td>0</td></tr>
+          <tr class="hl"><td>All 60</td><td>ML policy v1</td><td>0.904</td><td>0.873</td><td>14.4</td><td>23.0</td><td>88.9</td></tr>
+          <tr><td>All 60</td><td>Scanners + ML <em>(exploratory)</em></td><td>0.768</td><td>0.971</td><td>50.9</td><td>5.2</td><td>55.9</td></tr>
+        </tbody></table></div>
+      <p class="evnote">tfsec is the best detector on its own rules. Terrascan's alerts were 73% false on human-verified labels; the policy auto-acts on none of them. "Scanners + ML" was designed after seeing gold, so it is exploratory.</p>
+    </div>
+
+    <div class="evpane" id="ev-cal">
+      <p class="evlead">Does a stated probability match reality? Calibration learned from scanner labels, checked on human-verified gold.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Data</th><th>Rules</th><th>ECE (p ≥ 0.05) ↓</th><th>Mean predicted p</th><th>Actual rate</th></tr></thead>
+        <tbody>
+          <tr><td>Eval</td><td>All 60</td><td>0.021</td><td>—</td><td>—</td></tr>
+          <tr><td>Clean gold</td><td>All 60</td><td>0.036</td><td>0.571</td><td>0.552</td></tr>
+          <tr><td>Clean gold</td><td>tfsec (46)</td><td>0.034</td><td>0.713</td><td>0.709</td></tr>
+          <tr><td>Clean gold</td><td>Terrascan (14)</td><td>0.057</td><td>0.266</td><td>0.217</td></tr>
+        </tbody></table></div>
+      <p class="evnote">Calibration mostly transfers (predicted 0.96 → actual 0.95 in the top bin), but error grows by about 70% on human labels, and Terrascan rules are over-confident.</p>
+    </div>
+
+    <div class="evpane" id="ev-abl">
+      <p class="evlead">Which parts of the model matter? Linear SVM on the eval set (5,931 files).</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Configuration</th><th>Micro-F1</th><th>Macro-F1</th><th>Micro PR-AUC</th></tr></thead>
+        <tbody>
+          <tr><td>Word features only</td><td>0.846</td><td>0.752</td><td>0.903</td></tr>
+          <tr><td>Character features only</td><td>0.826</td><td>0.727</td><td>0.892</td></tr>
+          <tr class="hl"><td>Word + character (final)</td><td>0.851</td><td>0.769</td><td>0.908</td></tr>
+          <tr><td>Logistic Regression baseline (E1)</td><td>0.836</td><td>0.758</td><td>0.904</td></tr>
+        </tbody></table></div>
+      <p class="evnote">Calibration ablation (eval): ECE 0.029 raw Logistic Regression · 0.040 one shared Platt curve · 0.031 per-rule Platt · <b>0.021 per-rule isotonic</b>.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>TetraTrace · Member 4 · Risk-calibrated Terraform misconfiguration detection</span>
+    <span>Decision support only — learned patterns, not proof. Covers 60 AWS rules; does not replace Trivy or Checkov.</span>
+  </div>
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const SEV = {CRITICAL:0, HIGH:1, MEDIUM:2, LOW:3};
+const SEVCOL = {CRITICAL:'var(--crit)', HIGH:'var(--high)', MEDIUM:'#C9CFDA', LOW:'#5A6377'};
+const POLICY_TEXT = {
+  v1: 'Same thresholds rule for every severity. Tested once on held-out gold data.',
+  v2: 'Stricter safety for CRITICAL/HIGH rules, lighter review for LOW rules. Evaluated on eval data only.'
+};
+let state = {pane:'paste', policy:'v1', uploads:[], last:null, filter:'ALL', scans:0, pasteName:'input.tf',
+             reviews:{}, editing:new Set(), visible:[]};
+
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),1800); }
+
+// ---------- session header ----------
+const now = new Date();
+$('#caseId').textContent = 'TT-IAC-' + now.toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.random().toString(16).slice(2,6).toUpperCase();
+$('#sessTime').textContent = now.toLocaleString([], {dateStyle:'medium', timeStyle:'short'});
+
+// ---------- tabs ----------
+$$('.seg [data-pane]').forEach(b => b.onclick = () => {
+  $$('.seg [data-pane]').forEach(x => x.classList.toggle('on', x===b));
+  $$('.pane').forEach(p => p.classList.toggle('on', p.id === 'pane-' + b.dataset.pane));
+  state.pane = b.dataset.pane === 'samples' ? 'paste' : b.dataset.pane;
+});
+$$('#policySeg button').forEach(b => b.onclick = () => {
+  $$('#policySeg button').forEach(x => x.classList.toggle('on', x===b));
+  state.policy = b.dataset.policy; $('#policyDesc').textContent = POLICY_TEXT[state.policy];
+  $('#pipePolicy').textContent = 'Policy: ' + state.policy;
+});
+
+// ---------- editor ----------
+const code = $('#code'), gutter = $('#gutter');
+function syncEditor(){
+  const n = code.value.split('\n').length;
+  gutter.textContent = Array.from({length:n}, (_,i)=>i+1).join('\n');
+  $('#codeStats').textContent = `${n} lines · ${code.value.length.toLocaleString()} chars`;
+}
+code.addEventListener('input', syncEditor);
+code.addEventListener('scroll', () => gutter.scrollTop = code.scrollTop);
+code.addEventListener('keydown', e => { if (e.key==='Tab'){ e.preventDefault(); const s=code.selectionStart; code.setRangeText('  ', s, code.selectionEnd, 'end'); syncEditor(); }
+  if ((e.ctrlKey||e.metaKey) && e.key==='Enter') run(); });
+syncEditor();
+
+// ---------- uploads ----------
+const drop = $('#drop'), fileIn = $('#fileIn');
+['dragover','dragenter'].forEach(ev => drop.addEventListener(ev, e => {e.preventDefault(); drop.classList.add('over');}));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => {e.preventDefault(); drop.classList.remove('over');}));
+drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+fileIn.onchange = () => { addFiles(fileIn.files); fileIn.value=''; };
+async function addFiles(list){
+  for (const f of list){ if (!f.name.endsWith('.tf')) { toast(f.name + ' is not a .tf file'); continue; }
+    state.uploads.push({name:f.name, code: await f.text()}); }
+  renderChips(); state.pane='upload';
+}
+function renderChips(){
+  $('#fileChips').innerHTML = state.uploads.map((f,i)=>`<span class="fchip">${esc(f.name)} · ${f.code.length.toLocaleString()} ch<button aria-label="remove" data-i="${i}">×</button></span>`).join('');
+  $$('#fileChips button').forEach(b => b.onclick = () => { state.uploads.splice(+b.dataset.i,1); renderChips(); });
+}
+
+// ---------- meta + samples ----------
+async function loadMeta(){
+  try{
+    const m = await (await fetch('/api/meta')).json();
+    const st = $('#status');
+    if (!m.online){ st.className='status bad'; $('#statusText').textContent='MODEL OFFLINE';
+      $('#modelKv').innerHTML = `<dt>STATUS</dt><dd>${esc(m.reason)}</dd>`; $('#runBtn').disabled = true; return; }
+    st.className='status ok'; $('#statusText').textContent='MODEL ONLINE · ' + m.rules + ' RULES';
+    const v = m.versions;
+    $('#modelKv').innerHTML = `
+      <dt>MODEL</dt><dd class="mono" style="font-size:12px">${esc(v.model_version)}</dd>
+      <dt>PIPELINE</dt><dd>Word + char TF-IDF → one-vs-rest Linear SVM (C = 0.5) → per-rule isotonic calibration → per-rule thresholds</dd>
+      <dt>RULES</dt><dd>${m.rules} AWS rules · 46 tfsec/Trivy · 14 Terrascan</dd>
+      <dt>BUILT</dt><dd>${esc(v.created.slice(0,10))}</dd>
+      <dt>RUNTIME</dt><dd>scikit-learn ${esc(m.sklearn_installed)} ${m.sklearn_match ? '<span class="muted">· matches bundle</span>' : '<span style="color:var(--high)">· bundle built with ' + esc(v.sklearn) + '</span>'}</dd>`;
+    $('#samples').innerHTML = m.samples.map(s => `<button class="sample" data-id="${esc(s.id)}">${esc(s.title)}<span>${esc(s.file)}</span></button>`).join('');
+    $$('.sample').forEach(b => b.onclick = async () => {
+      const s = await (await fetch('/api/samples/' + b.dataset.id)).json();
+      code.value = s.code; state.pasteName = s.file; $('#pasteName').textContent = s.file; syncEditor();
+      $$('.seg [data-pane]')[0].click(); toast('Loaded: ' + s.title);
+    });
+    loadReviews();
+  }catch(e){ $('#status').className='status bad'; $('#statusText').textContent='SERVER UNREACHABLE'; }
+}
+loadMeta();
+
+// ---------- human review ----------
+const reviewKey = f => (f.evidence_reference || f.file) + '|' + f.predicted_rule;   // same code + same rule = same key
+const reviewerIn = $('#reviewer');
+try { reviewerIn.value = localStorage.getItem('tt_reviewer') || ''; } catch(e) {}
+reviewerIn.addEventListener('input', () => { try { localStorage.setItem('tt_reviewer', reviewerIn.value); } catch(e) {}
+  $$('.rerr').forEach(x => { x.hidden = true; }); });
+async function loadReviews(){
+  try { const r = await (await fetch('/api/reviews')).json(); state.reviews = r.latest || {}; }
+  catch(e) { state.reviews = {}; }
+  if (state.last){ renderList(); updateRevCount(); }
+}
+function updateRevCount(){
+  if (!state.last){ $('#revCount').textContent = 'Human review: —'; return; }
+  const rev = state.last.findings.filter(f => f.decision==='REVIEW');
+  const done = rev.filter(f => state.reviews[reviewKey(f)]).length;
+  $('#revCount').innerHTML = rev.length
+    ? `Needs decision <b>${rev.length - done}</b> · Human-reviewed <b>${done}</b> of ${rev.length} REVIEW`
+    : 'No REVIEW findings: nothing to check';
+}
+async function saveReview(f, decision, note, errEl){
+  const reviewer = reviewerIn.value.trim();
+  if (!reviewer){ errEl.textContent = 'Enter your name in the Reviewer box first.'; errEl.hidden = false; reviewerIn.focus(); return; }
+  try{
+    const res = await fetch('/api/review', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({review_key: reviewKey(f), human_decision: decision, reviewer, note, finding: f})});
+    const out = await res.json();
+    if (!res.ok) throw new Error(typeof out.detail === 'string' ? out.detail : 'Could not save the review');
+    state.reviews[out.review_key] = out; state.editing.delete(out.review_key);
+    renderList(); updateRevCount(); renderSchema();
+    toast(decision === 'confirmed' ? 'Saved: confirmed as a real problem' : 'Saved: marked not a problem');
+  }catch(e){ errEl.textContent = e.message + '. Check the dashboard window is still open.'; errEl.hidden = false; }
+}
+function reviewBlock(f, i){
+  if (f.decision !== 'REVIEW') return '';            // ACT is already confident: no human step
+  const k = reviewKey(f), r = state.reviews[k];
+  if (r && !state.editing.has(k)){
+    const when = new Date(r.reviewed_at).toLocaleString([], {dateStyle:'medium', timeStyle:'short'});
+    return `<div class="review"><div class="rdone">
+      <span class="rtag ${r.human_decision}">${r.human_decision==='confirmed' ? 'HUMAN: CONFIRMED' : 'HUMAN: NOT A PROBLEM'}</span>
+      <span>by ${esc(r.reviewer)} · ${esc(when)}</span>
+      ${r.review_note ? `<span class="rnote">“${esc(r.review_note)}”</span>` : ''}
+      <button class="rbtn link" data-change="${i}">Change</button></div></div>`;
+  }
+  return `<div class="review"><span class="q">NEEDS YOUR DECISION</span>
+    <input type="text" maxlength="1000" placeholder="Note (optional), e.g. bucket is meant to be public" data-note="${i}" aria-label="Review note">
+    <button class="rbtn yes" data-rv="confirmed" data-i="${i}">Real problem</button>
+    <button class="rbtn no" data-rv="not_a_problem" data-i="${i}">Not a problem</button>
+    <span class="rerr" hidden></span></div>`;
+}
+function wireReviews(){
+  $$('#flist [data-rv]').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i, box = b.closest('.review');
+    saveReview(state.visible[i], b.dataset.rv, box.querySelector('[data-note]').value.trim(), box.querySelector('.rerr'));
+  });
+  $$('#flist [data-change]').forEach(b => b.onclick = () => { state.editing.add(reviewKey(state.visible[+b.dataset.change])); renderList(); });
+}
+const withReview = f => { const r = (f.decision==='REVIEW' && state.reviews[reviewKey(f)]) || {};
+  return {...f, human_decision: r.human_decision ?? null, reviewer: r.reviewer ?? null, reviewed_at: r.reviewed_at ?? null, review_note: r.review_note ?? null}; };
+function renderSchema(){
+  const F = state.last ? state.last.findings : [];
+  $('#schema').textContent = F.length ? JSON.stringify(stripLocal(withReview(F[0])), null, 2) : '// No findings to export';
+}
+$('#dlReviews').onclick = async () => {
+  try{
+    const r = await (await fetch('/api/reviews')).json();
+    if (!r.log || !r.log.length){ toast('No reviews saved yet'); return; }
+    download('Human_Review_Log.csv', toCsv(r.log), 'text/csv');
+  }catch(e){ toast('Could not reach the dashboard server'); }
+};
+
+// ---------- pipeline animation ----------
+const STAGES = ['ingest','features','model','calibration','policy'];
+function setStage(i, mode){ // mode: active | done | idle
+  $$('.stage').forEach((s,k) => { s.classList.toggle('active', mode==='active' && k===i);
+    s.classList.toggle('done', k < i || (mode==='done' && k===i)); });
+  const pct = Math.max(0, Math.min(1, (mode==='done' ? i : i-0.5) / 4));
+  const rail = $('#rail');
+  if (window.matchMedia('(max-width:700px)').matches){ rail.style.width=''; rail.style.height = (pct*100)+'%'; }
+  else { rail.style.height=''; rail.style.width = (pct*100)+'%'; }
+}
+function resetPipe(){ $$('.stage').forEach(s => s.classList.remove('active','done')); $('#rail').style.width='0'; $('#rail').style.height='0'; }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function stageText(k, st){
+  const f = n => Number(n).toLocaleString();
+  return {
+    ingest: `${f(st.ingest.files)} file · ${f(st.ingest.chars)} chars · ${f(st.ingest.resources)} resources`,
+    features: `${f(st.features.nonzero)} active of ${f(st.features.dimensions)} · ${st.features.ms} ms`,
+    model: `${f(st.model.rules_scored)} scores · ${st.model.ms} ms`,
+    calibration: `${f(st.calibration.above_0_5)} rules ≥ 0.5 · ${st.calibration.ms} ms`,
+    policy: `${st.policy.act} ACT · ${st.policy.review} REVIEW · ${st.policy.no_alert} clear`
+  }[k];
+}
+
+// ---------- run ----------
+$('#runBtn').onclick = run;
+$('#clearBtn').onclick = () => { code.value=''; state.uploads=[]; renderChips(); syncEditor(); state.pasteName='input.tf'; $('#pasteName').textContent='input.tf'; };
+async function run(){
+  const files = state.pane==='upload' && state.uploads.length ? state.uploads : (code.value.trim() ? [{name:state.pasteName, code:code.value}] : []);
+  if (!files.length){ toast('Add Terraform code first'); return; }
+  $('#runBtn').disabled = true; $('#warnBox').innerHTML=''; $('#pipeState').textContent='RUNNING';
+  resetPipe(); setStage(0,'active');
+  const t0 = performance.now();
+  let out, tResp = 0;
+  try{
+    const req = fetch('/api/scan', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({files, policy: state.policy})}).then(r => { tResp = performance.now(); return r; });
+    for (let i=0;i<2;i++){ await sleep(260); setStage(i+1,'active'); }
+    const res = await req;
+    out = await res.json();
+    if (!res.ok) throw new Error(out.detail || 'Scan failed');
+  }catch(e){
+    $('#warnBox').innerHTML = `<div class="warn err">${esc(e.message)}</div>`; $('#pipeState').textContent='ERROR'; resetPipe(); $('#runBtn').disabled=false; return;
+  }
+  for (let i=0;i<5;i++){ $('#s-'+STAGES[i]).textContent = stageText(STAGES[i], out.stages); setStage(i,'done'); await sleep(230); }
+  $('#pipeState').textContent='COMPLETE';
+  $('#pipeTime').textContent = `Server time: ${out.stages.total_ms} ms · request round trip ${Math.round(tResp-t0)} ms`;
+  $('#warnBox').innerHTML = (out.warnings||[]).map(w => `<div class="warn">${esc(w)}</div>`).join('');
+  state.last = out; state.scans++; $('#scanCount').textContent = state.scans;
+  renderResults(); $('#runBtn').disabled=false;
+}
+
+// ---------- results ----------
+$$('#filters .fbtn').forEach(b => b.onclick = () => { $$('#filters .fbtn').forEach(x=>x.classList.toggle('on', x===b)); state.filter=b.dataset.f; renderList(); });
+
+function renderResults(){
+  const F = state.last.findings, act = F.filter(f=>f.decision==='ACT'), rev = F.filter(f=>f.decision==='REVIEW');
+  const ch = F.filter(f=>f.severity==='CRITICAL'||f.severity==='HIGH').length;
+  $('#kAct').textContent = act.length; $('#kRev').textContent = rev.length; $('#kCH').textContent = ch; $('#kFiles').textContent = state.last.files.length;
+  let cls='v-ok', v='NO FINDINGS', d='No rule reached the REVIEW or ACT threshold under ' + state.last.policy + '.';
+  if (act.some(f=>f.severity==='CRITICAL')){ cls='v-crit'; v='CRITICAL EXPOSURE'; d=`${act.filter(f=>f.severity==='CRITICAL').length} critical finding(s) need remediation before deployment.`; }
+  else if (act.some(f=>f.severity==='HIGH')){ cls='v-high'; v='HIGH RISK'; d=`${act.filter(f=>f.severity==='HIGH').length} high-severity finding(s) to fix.`; }
+  else if (act.length){ cls='v-high'; v='FIX RECOMMENDED'; d=`${act.length} medium/low finding(s) to fix.`; }
+  else if (rev.length){ cls='v-rev'; v='ANALYST REVIEW'; d=`${rev.length} uncertain finding(s) need a person to check.`; }
+  $('#verdictWrap').innerHTML = `<div class="verdict ${cls}"><div><div class="v">${v}</div><div class="d">${esc(d)}</div></div><div class="hint">${esc(state.last.policy_label)}</div></div>`;
+  const counts = {CRITICAL:0,HIGH:0,MEDIUM:0,LOW:0}; F.forEach(f=>counts[f.severity]++);
+  $('#sevbar').innerHTML = F.length ? Object.entries(counts).filter(([,n])=>n).map(([s,n])=>`<span title="${s}: ${n}" style="width:${100*n/F.length}%;background:${SEVCOL[s]}"></span>`).join('') : '';
+  renderSchema();
+  ['#dlCsv','#dlJson','#cpJson'].forEach(s => $(s).disabled = !F.length);
+  state.editing.clear();
+  renderList(); updateRevCount();
+}
+const stripLocal = f => { const {evidence_tokens, ...rest} = f; return rest; };
+
+function renderList(){
+  if (!state.last){ return; }
+  let F = state.last.findings;
+  if (state.filter==='ACT') F = F.filter(f=>f.decision==='ACT');
+  if (state.filter==='REVIEW') F = F.filter(f=>f.decision==='REVIEW');
+  if (state.filter==='CH') F = F.filter(f=>f.severity==='CRITICAL'||f.severity==='HIGH');
+  if (state.filter==='TODO') F = F.filter(f=>f.decision==='REVIEW' && !state.reviews[reviewKey(f)]);
+  if (state.filter==='DONE') F = F.filter(f=>f.decision==='REVIEW' && state.reviews[reviewKey(f)]);
+  state.visible = F;
+  if (!F.length){ $('#flist').innerHTML = `<div class="empty">${state.filter==='TODO' ? 'Every REVIEW finding has a human decision.' : 'Nothing to show for this filter.'}</div>`; return; }
+  const multi = state.last.files.length > 1;
+  $('#flist').innerHTML = F.map((f, i) => {
+    const p = f.calibrated_probability, lo = f.threshold_low, hi = f.threshold_high;
+    const loP = lo==null?100:lo*100, hiP = hi==null?100:hi*100;
+    return `<article class="finding">
+      <div>
+        <div class="top">
+          <span class="tag ${f.decision==='ACT'?'act':'rev'}">${f.decision}</span>
+          <span class="tag ${f.severity}">${f.severity}</span>
+          <span class="rule">${esc(f.predicted_rule)}</span>
+        </div>
+        <div class="title">${esc(f.what_it_means)}</div>
+        <div class="meta"><span>${esc(f.scanner_family)}</span>${multi?`<span>${esc(f.file)}</span>`:''}<span>raw score ${f.raw_score}</span></div>
+        ${f.evidence_tokens && f.evidence_tokens.length ? `<div class="tokens"><span class="hint" style="align-self:center">evidence</span>${f.evidence_tokens.map(t=>`<span class="tok">${esc(t)}</span>`).join('')}</div>` : ''}
+      </div>
+      <div class="meter" aria-label="calibrated probability ${p}">
+        <div class="lab"><span>calibrated p</span><b>${p.toFixed(3)}</b></div>
+        <div class="track">
+          <div class="band" style="left:${Math.min(loP,hiP)}%;width:${Math.max(0,hiP-loP)}%"></div>
+          <div class="fill" style="width:${Math.max(2,p*100)}%"></div>
+          ${lo!=null?`<div class="mk" style="left:${loP}%" title="t_low ${lo}"></div>`:''}
+          ${hi!=null?`<div class="mk" style="left:${hiP}%" title="t_high ${hi}"></div>`:''}
+        </div>
+        <div class="ticks"><span>0</span><span>t_low ${lo==null?'—':lo.toFixed(2)} · t_high ${hi==null?'never':hi.toFixed(2)}</span><span>1</span></div>
+      </div>
+      ${reviewBlock(f, i)}
+    </article>`; }).join('');
+  wireReviews();
+}
+
+// ---------- export ----------
+function download(name, text, type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); URL.revokeObjectURL(a.href); }
+function toCsv(rows){ const cols = Object.keys(rows[0]); const q = v => { const s = Array.isArray(v) ? v.join(' | ') : (v ?? ''); return /[",\n]/.test(String(s)) ? '"' + String(s).replace(/"/g,'""') + '"' : s; };
+  return [cols.join(','), ...rows.map(r => cols.map(c => q(r[c])).join(','))].join('\n'); }
+const exportRows = () => state.last.findings.map(withReview);
+$('#dlCsv').onclick = () => download('Terraform_Security_Findings.csv', toCsv(exportRows()), 'text/csv');
+$('#dlJson').onclick = () => download('Terraform_Security_Findings.json', JSON.stringify(exportRows(), null, 2), 'application/json');
+$('#cpJson').onclick = async () => { try { await navigator.clipboard.writeText(JSON.stringify(exportRows(), null, 2)); toast('Findings copied'); } catch { toast('Copy blocked by the browser'); } };
+
+// ---------- evaluation evidence ----------
+$$('#evSeg button').forEach(b => b.onclick = () => {
+  $$('#evSeg button').forEach(x => x.classList.toggle('on', x===b));
+  $$('.evpane').forEach(p => p.classList.toggle('on', p.id === 'ev-' + b.dataset.ev));
+});
+(() => {
+  const rows = [
+    {n:'Both scanners', s:'tfsec + Terrascan, as-is', fa:50.9, mi:13.3},
+    {n:'Fixed-threshold model', s:'baseline E2', fa:20.2, mi:37.7},
+    {n:'ML policy v1', s:'your method · +88.9 REVIEW', fa:14.4, mi:23.0},
+    {n:'Scanners + ML', s:'exploratory · +55.9 REVIEW', fa:50.9, mi:5.2},
+  ];
+  const max = 55;
+  $('#scanBars').innerHTML = rows.map(r => `<div class="brow"><div class="nm">${esc(r.n)}<small>${esc(r.s)}</small></div>
+    <div class="bpair"><div class="bar"><i style="width:${r.fa/max*100}%;background:var(--crit)"></i>${r.fa.toFixed(1)}</div>
+    <div class="bar"><i style="width:${r.mi/max*100}%;background:var(--cyan);box-shadow:0 0 6px rgba(0,240,255,.5)"></i>${r.mi.toFixed(1)}</div></div></div>`).join('');
+})();
+</script>
+</body>
+</html>
